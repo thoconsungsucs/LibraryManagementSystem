@@ -33,10 +33,12 @@ namespace LMS.Services
                 {
                     throw new Exception("User not found or password is invalid.");
                 }
+
+                var roles = await _userManager.GetRolesAsync(user);
                 return new NewUser
                 {
                     UserName = user.UserName,
-                    Token = _tokenService.GenerateToken(user.UserName)
+                    Token = _tokenService.GenerateToken(user.UserName, roles.ToList())
                 };
             }
             catch (Exception ex)

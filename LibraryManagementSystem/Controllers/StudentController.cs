@@ -16,7 +16,7 @@ namespace LibraryManagementSystem.Controllers
         }
 
         [HttpGet]
-        [Authorize]
+        [Authorize(Roles = "Admin, Student")]
         public async Task<ActionResult<IEnumerable<StudentDTO>>> GetAllStudents()
         {
             try

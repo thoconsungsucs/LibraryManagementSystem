@@ -1,4 +1,5 @@
 ﻿using LMS.Domain.IService;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -12,17 +13,30 @@ namespace LMS.Services
         private readonly IConfiguration _configuration;
         private readonly SymmetricSecurityKey _key;
 
-        public TokenService(IConfiguration configuration)
+        public TokenService(IConfiguration configuration, UserManager<IdentityUser> userManager)
         {
             _configuration = configuration;
             _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:SigningKey"]));
         }
-        public string GenerateToken(string username)
+        public string GenerateToken(string username, List<string> roles = null)
         {
             List<Claim> claims = new List<Claim>()
             {
                 new Claim(ClaimTypes.Name, username),
             };
+
+            if (roles.IsNullOrEmpty())
+            {
+                claims.Add(new Claim(ClaimTypes.Role, "Student"));
+            }
+            else
+            {
+                foreach (var role in roles)
+                {
+                    claims.Add(new Claim(ClaimTypes.Role, role));
+                }
+            }
+
             var credentials = new SigningCredentials(_key, SecurityAlgorithms.HmacSha256);
             var tokenDiscriptor = new SecurityTokenDescriptor
             {
