@@ -4,6 +4,7 @@ namespace LMS.Domain.DTOs.Member
 {
     public class MemberDTO
     {
+        [Required]
         public string Id { get; set; }
         public int? StudentId { get; set; }
         [Required]

@@ -12,6 +12,7 @@ namespace LMS.DataAccess.Repository
         {
             _context = context;
         }
+
         public async Task<List<Member>> GetAllMembers()
         {
             return await _context.Members.Select(s => new Member
@@ -24,5 +25,25 @@ namespace LMS.DataAccess.Repository
                 PhoneNumber = s.PhoneNumber
             }).ToListAsync();
         }
+        public async Task<Member> GetMember(string id)
+        {
+            return await _context.Members.FirstOrDefaultAsync(s => s.Id == id);
+        }
+
+        public void UpdateMember(Member member)
+        {
+            _context.Members.Update(member);
+        }
+
+        public void DeleteMember(Member member)
+        {
+            _context.Members.Remove(member);
+        }
+
+        public async Task SaveAsync()
+        {
+            await _context.SaveChangesAsync();
+        }
+
     }
 }

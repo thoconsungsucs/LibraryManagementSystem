@@ -4,6 +4,10 @@ namespace LMS.Domain.IRepository
 {
     public interface IMemberRepository
     {
-        public Task<List<Member>> GetAllMembers();
+        Task<List<Member>> GetAllMembers();
+        Task<Member> GetMember(string id);
+        void UpdateMember(Member member);
+        void DeleteMember(Member member);
+        Task SaveAsync();
     }
 }
