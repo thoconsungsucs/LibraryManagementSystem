@@ -1,4 +1,4 @@
-﻿using LMS.Domain.DTOs.Student;
+﻿using LMS.Domain.DTOs.Member;
 using LMS.Domain.IService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -9,15 +9,15 @@ namespace LibraryManagementSystem.Controllers
     [ApiController]
     public class StudentController : ControllerBase
     {
-        private readonly IStudentService _studentService;
-        public StudentController(IStudentService studentService)
+        private readonly IMemberService _studentService;
+        public StudentController(IMemberService studentService)
         {
             _studentService = studentService;
         }
 
         [HttpGet]
         [Authorize(Roles = "Admin, Student")]
-        public async Task<ActionResult<IEnumerable<StudentDTO>>> GetAllStudents()
+        public async Task<ActionResult<IEnumerable<MemberDTO>>> GetAllStudents()
         {
             try
             {

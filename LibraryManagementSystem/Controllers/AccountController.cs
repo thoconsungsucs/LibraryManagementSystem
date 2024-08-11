@@ -1,5 +1,6 @@
 ﻿using LMS.Domain.DTOs.Account;
-using LMS.Domain.DTOs.Student;
+using LMS.Domain.DTOs.Librarian;
+using LMS.Domain.DTOs.Member;
 using LMS.Domain.IService;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,7 +18,7 @@ namespace LibraryManagementSystem.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> RegisterAsync(StudentRegisterDTO studentRegisterDTO)
+        public async Task<IActionResult> RegisterAsync(MemberRegisterDTO studentRegisterDTO)
         {
             if (!ModelState.IsValid)
             {
@@ -25,7 +26,25 @@ namespace LibraryManagementSystem.Controllers
             }
             try
             {
-                var newUser = await _accountService.RegisterAsync(studentRegisterDTO);
+                var newUser = await _accountService.RegisterMemberAsync(studentRegisterDTO);
+                return Ok(newUser);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
+        }
+
+        [HttpPost("register-librarian")]
+        public async Task<IActionResult> RegisterLibrarianAsync(LibrarianRegisterDTO librarianRegisterDTO)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            try
+            {
+                var newUser = await _accountService.RegisterLibrarianAsync(librarianRegisterDTO);
                 return Ok(newUser);
             }
             catch (Exception ex)

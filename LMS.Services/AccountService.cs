@@ -1,5 +1,7 @@
-﻿using LMS.Domain.DTOs.Account;
-using LMS.Domain.DTOs.Student;
+﻿using LMS.Domain;
+using LMS.Domain.DTOs.Account;
+using LMS.Domain.DTOs.Librarian;
+using LMS.Domain.DTOs.Member;
 using LMS.Domain.IService;
 using LMS.Domain.Mappers;
 using Microsoft.AspNetCore.Identity;
@@ -47,19 +49,47 @@ namespace LMS.Services
             }
         }
 
-        public async Task<NewUser> RegisterAsync(StudentRegisterDTO studentRegisterDTO)
+        public async Task<NewUser> RegisterMemberAsync(MemberRegisterDTO memberRegisterDTO)
         {
-            var student = studentRegisterDTO.ToStudent();
+            var member = memberRegisterDTO.ToMember();
             try
             {
+                var newUser = await RegisterAsyncHelper(member, memberRegisterDTO.Password);
+                return newUser;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
 
-                var result = await _userManager.CreateAsync(student, studentRegisterDTO.Password);
+        }
+
+        public async Task<NewUser> RegisterLibrarianAsync(LibrarianRegisterDTO librarianRegisterDTO)
+        {
+            var librarian = librarianRegisterDTO.ToLibrarian();
+            try
+            {
+                var newUser = await RegisterAsyncHelper(librarian, librarianRegisterDTO.Password);
+                return newUser;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+
+        }
+
+        public async Task<NewUser> RegisterAsyncHelper(IdentityUser user, string password)
+        {
+            try
+            {
+                var result = await _userManager.CreateAsync(user, password);
                 if (!result.Succeeded)
                 {
                     var errors = string.Join("\n", result.Errors.Select(e => e.Description));
                     throw new Exception($"User registration failed: \n{errors}");
                 }
-                var roleResult = await _userManager.AddToRoleAsync(student, "Student");
+                var roleResult = await _userManager.AddToRoleAsync(user, SD.Role_Member);
                 if (!roleResult.Succeeded)
                 {
                     var errors = string.Join("\n", result.Errors.Select(e => e.Description));
@@ -67,15 +97,14 @@ namespace LMS.Services
                 }
                 return new NewUser
                 {
-                    UserName = student.UserName,
-                    Token = _tokenService.GenerateToken(student.UserName)
+                    UserName = user.UserName,
+                    Token = _tokenService.GenerateToken(user.UserName)
                 };
             }
             catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
-
         }
     }
 }

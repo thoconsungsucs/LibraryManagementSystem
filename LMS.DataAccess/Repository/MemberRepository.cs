@@ -5,16 +5,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LMS.DataAccess.Repository
 {
-    public class StudentRepository : IStudentRepository
+    public class MemberRepository : IMemberRepository
     {
         private readonly ApplicationDbContext _context;
-        public StudentRepository(ApplicationDbContext context)
+        public MemberRepository(ApplicationDbContext context)
         {
             _context = context;
         }
-        public async Task<List<Student>> GetAllStudents()
+        public async Task<List<Member>> GetAllMembers()
         {
-            return await _context.Students.Select(s => new Student
+            return await _context.Members.Select(s => new Member
             {
                 Id = s.Id,
                 Email = s.Email,

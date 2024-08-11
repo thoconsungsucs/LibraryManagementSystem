@@ -1,4 +1,5 @@
-﻿using LMS.Domain.IService;
+﻿using LMS.Domain;
+using LMS.Domain.IService;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -27,7 +28,7 @@ namespace LMS.Services
 
             if (roles.IsNullOrEmpty())
             {
-                claims.Add(new Claim(ClaimTypes.Role, "Student"));
+                claims.Add(new Claim(ClaimTypes.Role, SD.Role_Member));
             }
             else
             {

@@ -1,14 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace LMS.Domain.DTOs.Student
+namespace LMS.Domain.DTOs.Librarian
 {
-    public class StudentRegisterDTO
+    public class LibrarianDTO
     {
-        [Required]
-        [Length(1, 15, ErrorMessage = "Length is larger than 0 and shorter than 16")]
-        public string UserName { get; set; }
-        [Required]
-        public string Password { get; set; }
+        public string Id { get; set; }
+        public int? IdentityId { get; set; }
         [Required]
         [EmailAddress]
         public string Email { get; set; }
@@ -22,6 +19,5 @@ namespace LMS.Domain.DTOs.Student
         public string Address { get; set; }
         [Required]
         public string PhoneNumber { get; set; }
-
     }
 }

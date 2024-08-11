@@ -3,13 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34728.123
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibraryManagementSystem", "LibraryManagementSystem\LibraryManagementSystem.csproj", "{8F585584-3369-4928-BFE2-E4BF399E20B5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibraryManagementSystem", "LibraryManagementSystem\LibraryManagementSystem.csproj", "{8F585584-3369-4928-BFE2-E4BF399E20B5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LMS.Domain", "LMS.Domain\LMS.Domain.csproj", "{985778C5-C61F-4B2B-BBE2-CB69D23A58C8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LMS.Domain", "LMS.Domain\LMS.Domain.csproj", "{985778C5-C61F-4B2B-BBE2-CB69D23A58C8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LMS.DataAccess", "LMS.DataAccess\LMS.DataAccess.csproj", "{1F8F7FEF-036E-4FE4-B214-E9C3DAD5B732}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LMS.DataAccess", "LMS.DataAccess\LMS.DataAccess.csproj", "{1F8F7FEF-036E-4FE4-B214-E9C3DAD5B732}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LMS.Services", "LMS.Services\LMS.Services.csproj", "{43582EC5-FB31-4668-87B2-E133E64CC6C1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LMS.Services", "LMS.Services\LMS.Services.csproj", "{43582EC5-FB31-4668-87B2-E133E64CC6C1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LMS.Infrastructure", "LMS.Infrastructure\LMS.Infrastructure.csproj", "{B31C4BC6-80B4-4D75-A6F6-96EA3B6101F7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{43582EC5-FB31-4668-87B2-E133E64CC6C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{43582EC5-FB31-4668-87B2-E133E64CC6C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{43582EC5-FB31-4668-87B2-E133E64CC6C1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B31C4BC6-80B4-4D75-A6F6-96EA3B6101F7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B31C4BC6-80B4-4D75-A6F6-96EA3B6101F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B31C4BC6-80B4-4D75-A6F6-96EA3B6101F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B31C4BC6-80B4-4D75-A6F6-96EA3B6101F7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

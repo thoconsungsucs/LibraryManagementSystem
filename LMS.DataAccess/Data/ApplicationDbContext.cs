@@ -10,18 +10,20 @@ namespace LMS.DataAccess.Data
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
         }
-        public DbSet<Student> Students { get; set; }
+        public DbSet<Member> Members { get; set; }
+        public DbSet<Librarian> Librarians { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Student>().ToTable("Students");
+            modelBuilder.Entity<Member>().ToTable("Members");
+            modelBuilder.Entity<Librarian>().ToTable("Librarians");
             base.OnModelCreating(modelBuilder);
 
             List<IdentityRole> identityRoles = new List<IdentityRole>
             {
                 new IdentityRole { Name = "Admin", NormalizedName = "ADMIN" },
                 new IdentityRole { Name = "Librarian", NormalizedName = "LIBRARIAN" },
-                new IdentityRole { Name = "Student", NormalizedName = "STUDENT" },
+                new IdentityRole { Name = "Member", NormalizedName = "MEMBER" },
             };
             modelBuilder.Entity<IdentityRole>().HasData(identityRoles);
         }

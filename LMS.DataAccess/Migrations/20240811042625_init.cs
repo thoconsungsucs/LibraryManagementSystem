@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -8,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace LMS.DataAccess.Migrations
 {
     /// <inheritdoc />
-    public partial class AddRoles : Migration
+    public partial class init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -159,19 +158,20 @@ namespace LMS.DataAccess.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Students",
+                name: "Members",
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    StudentId = table.Column<int>(type: "int", nullable: true),
                     FirstName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Address = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Students", x => x.Id);
+                    table.PrimaryKey("PK_Members", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Students_AspNetUsers_Id",
+                        name: "FK_Members_AspNetUsers_Id",
                         column: x => x.Id,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
@@ -183,9 +183,9 @@ namespace LMS.DataAccess.Migrations
                 columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
                 values: new object[,]
                 {
-                    { "9c302c56-12a3-44e8-9433-11a4b4c036f9", null, "Student", "STUDENT" },
-                    { "db036eb6-4a7a-478b-ba26-fca111e53514", null, "Librarian", "LIBRARIAN" },
-                    { "eaeb0b55-5de1-4c05-b398-75bbc2db95da", null, "Admin", "ADMIN" }
+                    { "59b8cb1e-a50f-4066-8a98-b7dc46bc1ae9", null, "Admin", "ADMIN" },
+                    { "5d89051f-fa13-4a8e-8734-3a067764dfe0", null, "Member", "MEMBER" },
+                    { "b3bdf282-6e4c-4172-9b05-dda3e360f55c", null, "Librarian", "LIBRARIAN" }
                 });
 
             migrationBuilder.CreateIndex(
@@ -247,7 +247,7 @@ namespace LMS.DataAccess.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "Students");
+                name: "Members");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LMS.DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240809144638_AddRoles")]
-    partial class AddRoles
+    [Migration("20240811042625_init")]
+    partial class init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -54,21 +54,21 @@ namespace LMS.DataAccess.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "eaeb0b55-5de1-4c05-b398-75bbc2db95da",
+                            Id = "59b8cb1e-a50f-4066-8a98-b7dc46bc1ae9",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "db036eb6-4a7a-478b-ba26-fca111e53514",
+                            Id = "b3bdf282-6e4c-4172-9b05-dda3e360f55c",
                             Name = "Librarian",
                             NormalizedName = "LIBRARIAN"
                         },
                         new
                         {
-                            Id = "9c302c56-12a3-44e8-9433-11a4b4c036f9",
-                            Name = "Student",
-                            NormalizedName = "STUDENT"
+                            Id = "5d89051f-fa13-4a8e-8734-3a067764dfe0",
+                            Name = "Member",
+                            NormalizedName = "MEMBER"
                         });
                 });
 
@@ -245,7 +245,7 @@ namespace LMS.DataAccess.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("LMS.Domain.Models.Student", b =>
+            modelBuilder.Entity("LMS.Domain.Models.Member", b =>
                 {
                     b.HasBaseType("Microsoft.AspNetCore.Identity.IdentityUser");
 
@@ -261,7 +261,10 @@ namespace LMS.DataAccess.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.ToTable("Students", (string)null);
+                    b.Property<int?>("StudentId")
+                        .HasColumnType("int");
+
+                    b.ToTable("Members", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -315,11 +318,11 @@ namespace LMS.DataAccess.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("LMS.Domain.Models.Student", b =>
+            modelBuilder.Entity("LMS.Domain.Models.Member", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
                         .WithOne()
-                        .HasForeignKey("LMS.Domain.Models.Student", "Id")
+                        .HasForeignKey("LMS.Domain.Models.Member", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
