@@ -1,5 +1,5 @@
-﻿using LMS.Domain;
-using LMS.Domain.IService;
+﻿using LMS.Domain.IService;
+using LMS.Domain.Ultilities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;

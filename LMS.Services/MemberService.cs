@@ -21,7 +21,7 @@ namespace LMS.Services
         public async Task<MemberDTO> GetMember(string id)
         {
             var member = await _memberRepository.GetMember(id);
-            return member.ToMemberDTO();
+            return member?.ToMemberDTO();
         }
 
         public async Task<MemberDTO> UpdateMember(MemberDTO member)

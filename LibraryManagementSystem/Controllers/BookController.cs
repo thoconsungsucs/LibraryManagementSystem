@@ -1,27 +1,26 @@
-﻿using LMS.Domain.DTOs.Member;
-using LMS.Domain.IService;
-using Microsoft.AspNetCore.Authorization;
+﻿using LMS.Domain.IService;
+using LMS.Domain.Models;
+using LMS.Domain.Ultilities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LibraryManagementSystem.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/book")]
     [ApiController]
-    public class MemberController : ControllerBase
+    public class BookController : ControllerBase
     {
-        private readonly IMemberService _MemberService;
-        public MemberController(IMemberService MemberService)
+        private readonly IBookService _bookService;
+        public BookController(IBookService bookService)
         {
-            _MemberService = MemberService;
+            _bookService = bookService;
         }
-
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<MemberDTO>>> GetAllMembers()
+        public async Task<ActionResult<IEnumerable<Book>>> GetAllBooks([FromQuery] BookFilter filter)
         {
             try
             {
-                var Members = await _MemberService.GetAllMembers();
-                return Ok(Members);
+                var books = await _bookService.GetAllBooks(filter);
+                return Ok(books);
             }
             catch (Exception ex)
             {
@@ -30,12 +29,12 @@ namespace LibraryManagementSystem.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<MemberDTO>> GetMember(string id)
+        public async Task<ActionResult<Book>> GetBook(int id)
         {
             try
             {
-                var Member = await _MemberService.GetMember(id);
-                return Ok(Member);
+                var book = await _bookService.GetBook(id);
+                return Ok(book);
             }
             catch (Exception ex)
             {
@@ -44,7 +43,7 @@ namespace LibraryManagementSystem.Controllers
         }
 
         [HttpPut]
-        public async Task<ActionResult<MemberDTO>> UpdateMember(MemberDTO Member)
+        public async Task<ActionResult<Book>> UpdateBook(Book book)
         {
             if (!ModelState.IsValid)
             {
@@ -52,8 +51,8 @@ namespace LibraryManagementSystem.Controllers
             }
             try
             {
-                var updatedMember = await _MemberService.UpdateMember(Member);
-                return Ok(updatedMember);
+                var updatedBook = await _bookService.UpdateBook(book);
+                return Ok(updatedBook);
             }
             catch (Exception ex)
             {
@@ -62,13 +61,12 @@ namespace LibraryManagementSystem.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin, Member")]
-        public async Task<ActionResult<MemberDTO>> DeleteMember(string id)
+        public async Task<ActionResult<Book>> DeleteBook(int id)
         {
             try
             {
-                var deletedMember = await _MemberService.DeleteMember(id);
-                return Ok(deletedMember);
+                var deletedBook = await _bookService.DeleteBookAsync(id);
+                return Ok(deletedBook);
             }
             catch (Exception ex)
             {

@@ -4,6 +4,7 @@ using LMS.DataAccess.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LMS.DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240812024358_AddBookAndLoan")]
+    partial class AddBookAndLoan
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -38,7 +41,7 @@ namespace LMS.DataAccess.Migrations
                     b.Property<int>("Available")
                         .HasColumnType("int");
 
-                    b.Property<string>("Category")
+                    b.Property<string>("CategoryName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -133,19 +136,19 @@ namespace LMS.DataAccess.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "71799274-461b-40f7-8580-fd871fe803a8",
+                            Id = "560a5558-47a1-43c8-8e85-661f4afce256",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "798f03b3-93b8-451c-8cb6-1516bd453273",
+                            Id = "0d3648d7-11bc-42c4-a948-d5db590368a6",
                             Name = "Librarian",
                             NormalizedName = "LIBRARIAN"
                         },
                         new
                         {
-                            Id = "1de01430-16f8-4140-a0b9-1e0cc3cd7383",
+                            Id = "182f20de-80c8-493d-b902-1a09ea1ec4b9",
                             Name = "Member",
                             NormalizedName = "MEMBER"
                         });

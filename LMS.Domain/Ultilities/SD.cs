@@ -1,4 +1,4 @@
-﻿namespace LMS.Domain
+﻿namespace LMS.Domain.Ultilities
 {
     public static class SD
     {
