@@ -12,5 +12,11 @@ namespace LMS.Domain.IService
         public Task<Loan> UpdateLoan(LoanDTOForPut loanDTOForPut);
         public Task<Loan> DeleteLoan(int id);
         public Task<bool> CanBorrow(string id);
+        public Task<Loan> CancelLoan(int id);
+        public Task<Loan> ConfirmLoan(int id);
+        public Task<Loan> ReturnBook(int id);
+        public Task<Loan> ConfirmReturn(int id);
+
+
     }
 }

@@ -2,7 +2,8 @@
 {
     public class LoanDTOForPut
     {
-        int Id { get; set; }
-        public DateOnly ReturnDate { get; set; }
+        public int Id { get; set; }
+        public DateOnly LoanDate { get; set; } 
+        public int LoanDuration { get; set; }
     }
 }
