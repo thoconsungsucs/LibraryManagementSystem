@@ -4,7 +4,7 @@ using LMS.Domain.DTOs.Member;
 
 namespace LMS.Domain.IService
 {
-    public interface IAccountService
+    public interface IAccountRepository
     {
         Task<NewUser> RegisterMemberAsync(MemberRegisterDTO studentRegisterDTO);
         Task<NewUser> RegisterLibrarianAsync(LibrarianRegisterDTO librarianRegisterDTO);

@@ -1,9 +1,10 @@
-﻿using LMS.Domain.IRepository;
+﻿using LMS.Domain.DTOs.Book;
+using LMS.Domain.IRepository;
 using LMS.Domain.IService;
+using LMS.Domain.Mappers;
 using LMS.Domain.Models;
 using LMS.Domain.Ultilities;
 using Microsoft.EntityFrameworkCore;
-
 namespace LMS.Services
 {
     public class BookService : IBookService
@@ -37,7 +38,7 @@ namespace LMS.Services
                 books = books.Where(x => x.PublishedDate != null && filter.Years.Contains(x.PublishedDate.Value.Year));
             }
 
-            if (filter.Pages != 0)
+            if (filter.Pages != null && filter.Pages != 0)
             {
                 books = books.Where(x => x.Pages <= filter.Pages);
             }
@@ -51,12 +52,23 @@ namespace LMS.Services
             {
                 books = books.Where(x => filter.Categories.Contains(x.Category));
             }
+
+            books = books.Skip((filter.PageNumber - 1) * filter.PageSize).Take(filter.PageSize);
+
             return await books.ToListAsync();
         }
 
         public async Task<Book> GetBook(int id)
         {
             return await _bookRepository.GetBook(id);
+        }
+
+        public async Task<Book> AddBook(BookDTO bookDTO)
+        {
+            var book = bookDTO.ToBook();
+            _bookRepository.AddBook(book);
+            await _bookRepository.SaveAsync();
+            return book;
         }
 
         public async Task<Book> UpdateBook(Book book)

@@ -1,4 +1,5 @@
-﻿using LMS.Domain.IService;
+﻿using LMS.Domain.DTOs.Book;
+using LMS.Domain.IService;
 using LMS.Domain.Models;
 using LMS.Domain.Ultilities;
 using Microsoft.AspNetCore.Mvc;
@@ -41,6 +42,25 @@ namespace LibraryManagementSystem.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
+
+        [HttpPost]
+        public async Task<ActionResult<Book>> AddBook(BookDTO bookDTO)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            try
+            {
+                var newBook = await _bookService.AddBook(bookDTO);
+                return CreatedAtAction(nameof(GetBook), new { id = newBook.Id }, newBook);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
+        }
+
 
         [HttpPut]
         public async Task<ActionResult<Book>> UpdateBook(Book book)

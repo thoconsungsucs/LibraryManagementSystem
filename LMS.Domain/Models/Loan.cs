@@ -16,10 +16,10 @@ namespace LMS.Domain.Models
         public Book Book { get; set; }
         [Required]
         [DataType(DataType.Date)]
-        public DateTime LoanDate { get; set; }
+        public DateOnly LoanDate { get; set; }
         [DataType(DataType.Date)]
-        public DateTime ReturnDate { get; set; }
+        public DateOnly ReturnDate { get; set; }
         [DataType(DataType.DateTime)]
-        public DateTime? ActualReturnDate { get; set; }
+        public DateOnly? ActualReturnDate { get; set; }
     }
 }

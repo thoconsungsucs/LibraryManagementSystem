@@ -1,4 +1,5 @@
-﻿using LMS.Domain.Models;
+﻿using LMS.Domain.DTOs.Book;
+using LMS.Domain.Models;
 using LMS.Domain.Ultilities;
 
 namespace LMS.Domain.IService
@@ -7,6 +8,7 @@ namespace LMS.Domain.IService
     {
         Task<List<Book>> GetAllBooks(BookFilter filter);
         Task<Book> GetBook(int id);
+        Task<Book> AddBook(BookDTO bookDTO);
         Task<Book> UpdateBook(Book book);
         Task<Book> DeleteBookAsync(int id);
     }

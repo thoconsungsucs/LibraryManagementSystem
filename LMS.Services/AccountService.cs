@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace LMS.Services
 {
-    public class AccountService : IAccountService
+    public class AccountService : IAccountRepository
     {
         private readonly ITokenService _tokenService;
         private readonly UserManager<IdentityUser> _userManager;

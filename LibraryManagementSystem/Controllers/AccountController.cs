@@ -10,9 +10,9 @@ namespace LibraryManagementSystem.Controllers
     [ApiController]
     public class AccountController : ControllerBase
     {
-        private readonly IAccountService _accountService;
+        private readonly IAccountRepository _accountService;
 
-        public AccountController(IAccountService accountService, ILogger<AccountController> logger)
+        public AccountController(IAccountRepository accountService, ILogger<AccountController> logger)
         {
             _accountService = accountService;
         }

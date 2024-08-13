@@ -21,6 +21,12 @@ namespace LMS.DataAccess.Repository
         {
             return await _context.Books.FirstOrDefaultAsync(b => b.Id == id);
         }
+
+        public void AddBook(Book book)
+        {
+            _context.Books.Add(book);
+        }
+
         public void DeletBook(Book book)
         {
             _context.Books.Remove(book);

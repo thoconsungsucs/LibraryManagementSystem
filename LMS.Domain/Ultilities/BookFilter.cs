@@ -9,5 +9,7 @@
         public string[]? Categories { get; set; }
         public int? Pages { get; set; }
         public bool IsAvailable { get; set; } = true;
+        public int PageNumber { get; set; } = 1;
+        public int PageSize { get; set; } = 10;
     }
 }
