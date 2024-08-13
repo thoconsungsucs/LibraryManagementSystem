@@ -24,7 +24,7 @@ namespace LMS.Services
         public async Task<List<LoanDTO>> GetAllLoans(LoanFilter loanFilter)
         {
             var loans = _loanRepository.GetAllLoans();
-            Member member = new Member();
+            Member member = null;
             IQueryable<Book> books;
 
 
@@ -42,9 +42,16 @@ namespace LMS.Services
             {
                 loans = loans.Where(l => l.MemberId == loanFilter.MemberId);
                 member = await _memberRepository.GetMember(loanFilter.MemberId);
+                if (member == null)
+                {
+                    throw new Exception("Member not found");
+                }
             }
 
-            loans = loans.Where(l => loanFilter.IsReturned ? l.ActualReturnDate.HasValue : !l.ActualReturnDate.HasValue);
+            if (!String.IsNullOrEmpty(loanFilter.Status))
+            {
+                loans = loans.Where(l => l.Status == loanFilter.Status);
+            }
 
             if (!String.IsNullOrEmpty(loanFilter.BookTitle))
             {
@@ -54,11 +61,12 @@ namespace LMS.Services
             {
                 books = _bookRepository.GetAllBooks();
             }
-            List<LoanDTO> loanDTOs = await loans.Join(books, l => l.BookId, b => b.Id, (l, b) => new LoanDTO
+
+            List<LoanDTO> loanDTOs = await books.Join(loans, b => b.Id, l => l.BookId, (b, l) => new LoanDTO
             {
                 Id = l.Id,
                 MemberId = l.MemberId,
-                MemberName = $"{member.FirstName} {member.LastName}",
+                MemberName = member != null ? $"{member.FirstName} {member.LastName}" : $"{l.Member.FirstName} {l.Member.LastName}",
                 BookId = l.BookId,
                 BookTitle = b.Title,
                 LoanDate = l.LoanDate,
@@ -76,7 +84,7 @@ namespace LMS.Services
         public async Task<bool> CanBorrow(string id)
         {
             var outDateLoanNumber = await _loanRepository.GetAllLoans()
-                .Where(l => l.MemberId == id && l.ReturnDate > DateOnly.FromDateTime(DateTime.Now))
+                .Where(l => l.MemberId == id && l.ReturnDate < DateOnly.FromDateTime(DateTime.Now))
                 .CountAsync();
             return outDateLoanNumber < 1;
         }
@@ -93,17 +101,28 @@ namespace LMS.Services
             }
 
             var loan = loanDTOForPost.ToLoan();
+            loan.Status = SD.Status_Loan_Pending;
             _loanRepository.AddLoan(loan);
+
+            var book = await _bookRepository.GetBook(loanDTOForPost.BookId);
+            book.Available = book.Available - 1;
+            _bookRepository.UpdateBook(book);
+
             await _loanRepository.SaveAsync();
             return loan;
         }
 
-        private void CheckLoanForPost(LoanDTOForPost loanDTOForPost)
+        private async void CheckLoanForPost(LoanDTOForPost loanDTOForPost)
         {
-            var bookExist = _bookRepository.GetAllBooks().Any(b => b.Id == loanDTOForPost.BookId);
-            if (!bookExist)
+            var book = await _bookRepository.GetBook(loanDTOForPost.BookId);
+            if (book == null)
             {
                 throw new Exception("Book not found");
+            }
+
+            if (book.Available == 0)
+            {
+                throw new Exception("Book is not available");
             }
 
             if (loanDTOForPost.LoanDate < DateOnly.FromDateTime(DateTime.Now))

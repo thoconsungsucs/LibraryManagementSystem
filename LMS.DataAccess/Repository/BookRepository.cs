@@ -32,7 +32,7 @@ namespace LMS.DataAccess.Repository
             _context.Books.Remove(book);
         }
 
-        public void UpdatBook(Book book)
+        public void UpdateBook(Book book)
         {
             _context.Books.Update(book);
         }

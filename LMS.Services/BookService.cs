@@ -73,7 +73,7 @@ namespace LMS.Services
 
         public async Task<Book> UpdateBook(Book book)
         {
-            _bookRepository.UpdatBook(book);
+            _bookRepository.UpdateBook(book);
             await _bookRepository.SaveAsync();
             return book;
         }

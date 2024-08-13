@@ -7,7 +7,7 @@ namespace LMS.Domain.IRepository
         IQueryable<Book> GetAllBooks();
         Task<Book> GetBook(int id);
         void AddBook(Book book);
-        void UpdatBook(Book book);
+        void UpdateBook(Book book);
         void DeletBook(Book book);
         Task SaveAsync();
     }

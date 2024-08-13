@@ -40,7 +40,7 @@ namespace LMS.Services
                 return new NewUser
                 {
                     UserName = user.UserName,
-                    Token = _tokenService.GenerateToken(user.UserName, roles.ToList())
+                    Token = _tokenService.GenerateToken(user.Id, user.UserName, roles.ToList())
                 };
             }
             catch (Exception ex)
@@ -98,7 +98,7 @@ namespace LMS.Services
                 return new NewUser
                 {
                     UserName = user.UserName,
-                    Token = _tokenService.GenerateToken(user.UserName)
+                    Token = _tokenService.GenerateToken(user.Id, user.UserName)
                 };
             }
             catch (Exception ex)
