@@ -11,10 +11,10 @@ namespace LMS.Services
     public class AccountService : IAccountRepository
     {
         private readonly ITokenService _tokenService;
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly UserManager<IdentityUser<int>> _userManager;
+        private readonly SignInManager<IdentityUser<int>> _signInManager;
 
-        public AccountService(ITokenService tokenService, UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager)
+        public AccountService(ITokenService tokenService, UserManager<IdentityUser<int>> userManager, SignInManager<IdentityUser<int>> signInManager)
         {
             _tokenService = tokenService;
             _userManager = userManager;
@@ -79,7 +79,7 @@ namespace LMS.Services
 
         }
 
-        public async Task<NewUser> RegisterAsyncHelper(IdentityUser user, string password)
+        public async Task<NewUser> RegisterAsyncHelper(IdentityUser<int> user, string password)
         {
             try
             {

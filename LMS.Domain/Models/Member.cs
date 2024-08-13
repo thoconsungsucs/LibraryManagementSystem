@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace LMS.Domain.Models
 {
-    public class Member : IdentityUser
+    public class Member : IdentityUser<int>
     {
         public int? StudentId { get; set; }
         [Required]

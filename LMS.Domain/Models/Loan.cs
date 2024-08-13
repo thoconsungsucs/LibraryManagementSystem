@@ -7,7 +7,7 @@ namespace LMS.Domain.Models
     {
         public int Id { get; set; }
         [Required]
-        public string MemberId { get; set; }
+        public int MemberId { get; set; }
         [ForeignKey("MemberId")]
         public Member Member { get; set; }
         [Required]

@@ -42,7 +42,7 @@ namespace LibraryManagementSystem.Controllers
         [Route("member")]
         public async Task<IActionResult> CreateLoanMember([FromBody] LoanDTOForPost loanDTO)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            int userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             loanDTO.MemberId = userId;
 
             var canBorrow = await _loanService.CanBorrow(userId);

@@ -38,7 +38,7 @@ namespace LMS.Services
                 loans = loans.Where(l => l.ReturnDate == loanFilter.ReturnDate);
             }
 
-            if (!String.IsNullOrEmpty(loanFilter.MemberId))
+            if (loanFilter.MemberId != 0 && loanFilter.MemberId != null)
             {
                 loans = loans.Where(l => l.MemberId == loanFilter.MemberId);
                 member = await _memberRepository.GetMember(loanFilter.MemberId);
@@ -81,7 +81,7 @@ namespace LMS.Services
             return await _loanRepository.GetLoan(id);
         }
 
-        public async Task<bool> CanBorrow(string id)
+        public async Task<bool> CanBorrow(int id)
         {
             var outDateLoanNumber = await _loanRepository.GetAllLoans()
                 .Where(l => l.MemberId == id && l.ReturnDate < DateOnly.FromDateTime(DateTime.Now))

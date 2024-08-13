@@ -25,7 +25,7 @@ namespace LMS.DataAccess.Repository
                 PhoneNumber = s.PhoneNumber
             }).ToListAsync();
         }
-        public async Task<Member> GetMember(string id)
+        public async Task<Member> GetMember(int? id)
         {
             return await _context.Members.FirstOrDefaultAsync(s => s.Id == id);
         }

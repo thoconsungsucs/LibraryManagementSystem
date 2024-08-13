@@ -5,7 +5,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LMS.DataAccess.Data
 {
-    public class ApplicationDbContext : IdentityDbContext
+    public class ApplicationDbContext : IdentityDbContext<IdentityUser<int>, IdentityRole<int>, int>
+
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
@@ -21,13 +22,14 @@ namespace LMS.DataAccess.Data
             modelBuilder.Entity<Librarian>().ToTable("Librarians");
             base.OnModelCreating(modelBuilder);
 
-            List<IdentityRole> identityRoles = new List<IdentityRole>
+            List<IdentityRole<int>> identityRoles = new List<IdentityRole<int>>
             {
-                new IdentityRole { Name = "Admin", NormalizedName = "ADMIN" },
-                new IdentityRole { Name = "Librarian", NormalizedName = "LIBRARIAN" },
-                new IdentityRole { Name = "Member", NormalizedName = "MEMBER" },
+                new IdentityRole<int> { Id = 1, Name = "Admin", NormalizedName = "ADMIN" },
+                new IdentityRole<int> { Id = 2, Name = "Librarian", NormalizedName = "LIBRARIAN" },
+                new IdentityRole<int> { Id = 3, Name = "Member", NormalizedName = "MEMBER" },
             };
-            modelBuilder.Entity<IdentityRole>().HasData(identityRoles);
+
+            modelBuilder.Entity<IdentityRole<int>>().HasData(identityRoles);
         }
     }
 }

@@ -30,7 +30,7 @@ namespace LibraryManagementSystem.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<MemberDTO>> GetMember(string id)
+        public async Task<ActionResult<MemberDTO>> GetMember(int id)
         {
             try
             {
@@ -63,7 +63,7 @@ namespace LibraryManagementSystem.Controllers
 
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin, Member")]
-        public async Task<ActionResult<MemberDTO>> DeleteMember(string id)
+        public async Task<ActionResult<MemberDTO>> DeleteMember(int id)
         {
             try
             {

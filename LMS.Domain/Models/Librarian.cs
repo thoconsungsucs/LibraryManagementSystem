@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace LMS.Domain.Models
 {
-    public class Librarian : IdentityUser
+    public class Librarian : IdentityUser<int>
     {
         public int? IdentityId { get; set; }
         [Length(1, 15, ErrorMessage = "Length is larger than 0 and shorter than 16")]

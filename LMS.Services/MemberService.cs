@@ -18,7 +18,7 @@ namespace LMS.Services
             return members.Select(s => s.ToMemberDTO()).ToList();
         }
 
-        public async Task<MemberDTO> GetMember(string id)
+        public async Task<MemberDTO> GetMember(int id)
         {
             var member = await _memberRepository.GetMember(id);
             return member?.ToMemberDTO();
@@ -45,7 +45,7 @@ namespace LMS.Services
             return member;
         }
 
-        public async Task<MemberDTO> DeleteMember(string id)
+        public async Task<MemberDTO> DeleteMember(int id)
         {
             var member = await _memberRepository.GetMember(id);
             if (member == null)

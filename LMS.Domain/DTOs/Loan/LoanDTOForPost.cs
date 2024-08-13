@@ -4,7 +4,7 @@ namespace LMS.Domain.DTOs.Loan
 {
     public class LoanDTOForPost
     {
-        public string MemberId { get; set; }
+        public int MemberId { get; set; }
         public int BookId { get; set; }
         public DateOnly LoanDate { get; set; }
         [Range(1, 30)]

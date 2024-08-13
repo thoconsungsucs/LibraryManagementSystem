@@ -14,17 +14,17 @@ namespace LMS.Services
         private readonly IConfiguration _configuration;
         private readonly SymmetricSecurityKey _key;
 
-        public TokenService(IConfiguration configuration, UserManager<IdentityUser> userManager)
+        public TokenService(IConfiguration configuration, UserManager<IdentityUser<int>> userManager)
         {
             _configuration = configuration;
             _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:SigningKey"]));
         }
-        public string GenerateToken(string id, string username, List<string> roles = null)
+        public string GenerateToken(int id, string username, List<string> roles = null)
         {
             List<Claim> claims = new List<Claim>()
             {
                 new Claim(ClaimTypes.Name, username),
-                new Claim(ClaimTypes.NameIdentifier, id)
+                new Claim(ClaimTypes.NameIdentifier, id.ToString())
             };
 
             if (roles.IsNullOrEmpty())

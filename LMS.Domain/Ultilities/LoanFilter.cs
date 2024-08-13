@@ -2,7 +2,7 @@
 {
     public class LoanFilter
     {
-        public string? MemberId { get; set; }
+        public int? MemberId { get; set; }
         public string? BookTitle { get; set; }
         public DateOnly LoanDate { get; set; }
         public DateOnly ReturnDate { get; set; }
