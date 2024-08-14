@@ -54,5 +54,13 @@ namespace LibraryManagementSystem.Controllers
             return Ok(loan);
         }
 
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateLoan(int id, [FromBody] LoanDTOForPut loanDTO)
+        {
+            loanDTO.Id = id;
+            var loan = await _loanService.UpdateLoan(loanDTO);
+            return Ok(loan);
+        }
+
     }
 }

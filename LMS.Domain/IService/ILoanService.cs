@@ -16,6 +16,8 @@ namespace LMS.Domain.IService
         public Task<Loan> ConfirmLoan(int id);
         public Task<Loan> ReturnBook(int id);
         public Task<Loan> ConfirmReturn(int id);
+        public Task<Loan> ConfirmUpdate(int id);
+
 
 
     }

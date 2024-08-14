@@ -84,7 +84,7 @@ namespace LMS.Services
         public async Task<bool> CanBorrow(int id)
         {
             var outDateLoanNumber = await _loanRepository.GetAllLoans()
-                .Where(l => l.MemberId == id && l.ReturnDate < DateOnly.FromDateTime(DateTime.Now))
+                .Where(l => l.MemberId == id && (l.Status == SD.Status_Borrowing) && l.ActualReturnDate != null && l.ReturnDate < DateOnly.FromDateTime(DateTime.Now))
                 .CountAsync();
             return outDateLoanNumber < 1;
         }
@@ -167,12 +167,17 @@ namespace LMS.Services
             return loan;
         }
 
-        private void CheckLoanForPut(LoanDTOForPut loanDTOForPut)
+        private async void CheckLoanForPut(LoanDTOForPut loanDTOForPut)
         {
-            var loan = _loanRepository.GetLoan(loanDTOForPut.Id);
+            var loan = await _loanRepository.GetLoan(loanDTOForPut.Id);
             if (loan == null)
             {
                 throw new Exception("Loan not found");
+            }
+
+            if (loan.Status != SD.Status_Loan_Pending || loan.Status != SD.Status_Update_Pending || loan.ActualReturnDate != null && loan.ReturnDate < DateOnly.FromDateTime(DateTime.Now))
+            {
+                throw new Exception("Cannot update");
             }
 
             if (loanDTOForPut.LoanDate < DateOnly.FromDateTime(DateTime.Now))
@@ -191,17 +196,60 @@ namespace LMS.Services
             throw new NotImplementedException();
         }
 
-        public Task<Loan> ConfirmLoan(int id)
+        public async Task<Loan> ConfirmLoan(int id)
         {
-            throw new NotImplementedException();
+            var loan = await _loanRepository.GetLoan(id);
+            if (loan == null)
+            {
+                throw new Exception("Loan not found");
+            }
+            if (loan.Status != SD.Status_Loan_Pending)
+            {
+                throw new Exception("Loan is not pending");
+            }
+            loan.Status = SD.Status_Borrowing;
+            _loanRepository.UpdateLoan(loan);
+            await _loanRepository.SaveAsync();
+            return loan;
         }
 
-        public Task<Loan> ReturnBook(int id)
+        public async Task<Loan> ReturnBook(int id)
         {
-            throw new NotImplementedException();
+            var loan = await _loanRepository.GetLoan(id);
+            if (loan == null)
+            {
+                throw new Exception("Loan not found");
+            }
+            if (loan.Status != SD.Status_Borrowing || loan.Status != SD.Status_Update_Pending)
+            {
+                throw new Exception("Loan is not borrowing");
+            }
+            loan.Status = SD.Status_Return_Pending;
+            _loanRepository.UpdateLoan(loan);
+            await _loanRepository.SaveAsync();
+            return loan;
         }
 
-        public Task<Loan> ConfirmReturn(int id)
+        public async Task<Loan> ConfirmReturn(int id)
+        {
+            var loan = await _loanRepository.GetLoan(id);
+            if (loan == null)
+            {
+                throw new Exception("Loan not found");
+            }
+            if (loan.Status != SD.Status_Return_Pending)
+            {
+                throw new Exception("Loan is not return pending");
+            }
+            loan.Status = SD.Status_Returned;
+            _loanRepository.UpdateLoan(loan);
+            //Tracking
+            _bookRepository.GetBook(loan.BookId).Result.Available += 1;
+            await _loanRepository.SaveAsync();
+            return loan;
+        }
+
+        public Task<Loan> ConfirmUpdate(int id)
         {
             throw new NotImplementedException();
         }
