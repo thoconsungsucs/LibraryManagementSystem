@@ -34,6 +34,10 @@ namespace LibraryManagementSystem.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateLoan([FromBody] LoanDTOForPost loanDTO)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
             try
             {
                 var loan = await _loanService.AddLoan(loanDTO);
@@ -49,6 +53,10 @@ namespace LibraryManagementSystem.Controllers
         [Route("member")]
         public async Task<IActionResult> CreateLoanByMember([FromBody] LoanDTOForPost loanDTO)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
             int userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             loanDTO.MemberId = userId;
 
@@ -69,7 +77,7 @@ namespace LibraryManagementSystem.Controllers
         }
 
         [HttpPost]
-        [Route("confirm/{id}")]
+        [Route("confirm-loan/{id}")]
         public async Task<IActionResult> ConfirmLoan(int id)
         {
             try
@@ -86,10 +94,98 @@ namespace LibraryManagementSystem.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateLoan(int id, [FromBody] LoanDTOForPut loanDTO)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
             loanDTO.Id = id;
             try
             {
                 var loan = await _loanService.UpdateLoan(loanDTO);
+                return Ok(loan);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+
+        [HttpPost("confirm-update/{id}")]
+        public async Task<IActionResult> ConfirmUpdateLoan(int id)
+        {
+            try
+            {
+                var loan = await _loanService.ConfirmUpdate(id);
+                return Ok(loan);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+
+        [HttpPost("renew/{id}")]
+        public async Task<IActionResult> RenewLoan(int id, [FromQuery] int days)
+        {
+            try
+            {
+                var loan = await _loanService.RenewLoan(id, days);
+                return Ok(loan);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+
+        [HttpPost("confirm-renew/{id}")]
+        public async Task<IActionResult> ConfirmRenewLoan(int id)
+        {
+            try
+            {
+                var loan = await _loanService.ConfirmRenew(id);
+                return Ok(loan);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+
+        [HttpPost("return/{id}")]
+        public async Task<IActionResult> ReturnBook(int id)
+        {
+            try
+            {
+                var loan = await _loanService.ReturnBook(id);
+                return Ok(loan);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+
+        [HttpPost("confirm-return/{id}")]
+        public async Task<IActionResult> ConfirmReturn(int id)
+        {
+            try
+            {
+                var loan = await _loanService.ConfirmReturn(id);
+                return Ok(loan);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteLoan(int id)
+        {
+            try
+            {
+                var loan = await _loanService.DeleteLoan(id);
                 return Ok(loan);
             }
             catch (Exception e)

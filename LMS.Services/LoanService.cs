@@ -248,9 +248,9 @@ namespace LMS.Services
                 throw new Exception("Loan not found");
             }
 
-            if (loan.Status != SD.Status_Update_Pending)
+            if (loan.Status != SD.Status_Renew_Pending)
             {
-                throw new Exception("Loan is not update pending");
+                throw new Exception("Loan is not renew pending");
             }
 
             loan.Status = SD.Status_Borrowing;
@@ -261,14 +261,43 @@ namespace LMS.Services
             return loan;
         }
 
-        public Task<Loan> RenewLoan(int id, int days)
+        public async Task<Loan> RenewLoan(int id, int days)
         {
-            throw new NotImplementedException();
+            var loan = await _loanRepository.GetLoan(id);
+            if (loan == null)
+            {
+                throw new Exception("Loan not found");
+            }
+
+            if (!SD.ValidRenewStatus.Contains(loan.Status) || loan.ActualReturnDate != null && loan.ReturnDate < DateOnly.FromDateTime(DateTime.Now))
+            {
+                throw new Exception("Cannot renew");
+            }
+
+            loan.Status = SD.Status_Renew_Pending;
+            loan.RenewReturnDate = loan.ReturnDate.AddDays(days);
+            _loanRepository.UpdateLoan(loan);
+            await _loanRepository.SaveAsync();
+            return loan;
         }
 
-        public Task<Loan> ConfirmRenew(int id)
+        public async Task<Loan> ConfirmRenew(int id)
         {
-            throw new NotImplementedException();
+            var loan = await _loanRepository.GetLoan(id);
+            if (loan == null)
+            {
+                throw new Exception("Loan not found");
+            }
+            if (loan.Status != SD.Status_Renew_Pending)
+            {
+                throw new Exception("Loan is not renew pending");
+            }
+            loan.ReturnDate = loan.RenewReturnDate.Value;
+            loan.RenewReturnDate = null;
+            loan.Status = SD.Status_Borrowing;
+            _loanRepository.UpdateLoan(loan);
+            await _loanRepository.SaveAsync();
+            return loan;
         }
 
         public async Task<Loan> DeleteLoan(int id)
