@@ -187,7 +187,7 @@ namespace LMS.Services
             {
                 throw new Exception("Loan not found");
             }
-            if (loan.Status != SD.Status_Borrowing || loan.Status != SD.Status_Update_Pending)
+            if (loan.Status != SD.Status_Borrowing && loan.Status != SD.Status_Renew_Pending)
             {
                 throw new Exception("Return failed");
             }
