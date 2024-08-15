@@ -89,11 +89,25 @@ namespace LMS.Services
             return outDateLoanNumber < 1;
         }
 
+        private async Task CheckLoanForPost(LoanDTOForPost loanDTOForPost)
+        {
+            var book = await _bookRepository.GetBook(loanDTOForPost.BookId);
+            if (book == null)
+            {
+                throw new Exception("Book not found");
+            }
+
+            if (book.Available == 0)
+            {
+                throw new Exception("Book is not available");
+            }
+        }
+
         public async Task<Loan> AddLoan(LoanDTOForPost loanDTOForPost)
         {
             try
             {
-                CheckLoanForPost(loanDTOForPost);
+                await CheckLoanForPost(loanDTOForPost);
             }
             catch (Exception e)
             {
@@ -112,88 +126,41 @@ namespace LMS.Services
             return loan;
         }
 
-        private async void CheckLoanForPost(LoanDTOForPost loanDTOForPost)
-        {
-            var book = await _bookRepository.GetBook(loanDTOForPost.BookId);
-            if (book == null)
-            {
-                throw new Exception("Book not found");
-            }
-
-            if (book.Available == 0)
-            {
-                throw new Exception("Book is not available");
-            }
-
-            if (loanDTOForPost.LoanDate < DateOnly.FromDateTime(DateTime.Now))
-            {
-                throw new Exception("Loan date must be greater than or equal to today");
-            }
-
-            if (loanDTOForPost.LoanDate.AddDays(loanDTOForPost.LoanDuration) < loanDTOForPost.LoanDate)
-            {
-                throw new Exception("Return date must be greater than loan date");
-            }
-        }
-
-        public async Task<Loan> DeleteLoan(int id)
+        public async Task<Loan> CancelLoan(int id)
         {
             var loan = await _loanRepository.GetLoan(id);
             if (loan == null)
             {
                 throw new Exception("Loan not found");
             }
-            _loanRepository.DeleteLoan(loan);
+            if (loan.Status != SD.Status_Loan_Pending)
+            {
+                throw new Exception("Cannot cancel");
+            }
+            loan.Status = SD.Status_Cancelled;
+            _loanRepository.UpdateLoan(loan);
             await _loanRepository.SaveAsync();
             return loan;
         }
 
         public async Task<Loan> UpdateLoan(LoanDTOForPut loanDTOForPut)
         {
-            try
-            {
-                CheckLoanForPut(loanDTOForPut);
-            }
-            catch (Exception e)
-            {
-                throw new Exception(e.Message);
-            }
-
             var loan = await _loanRepository.GetLoan(loanDTOForPut.Id);
-            loan.LoanDate = loanDTOForPut.LoanDate;
-            loan.ReturnDate = loanDTOForPut.LoanDate.AddDays(loanDTOForPut.LoanDuration);
-            _loanRepository.UpdateLoan(loan);
-            await _loanRepository.SaveAsync();
-            return loan;
-        }
 
-        private async void CheckLoanForPut(LoanDTOForPut loanDTOForPut)
-        {
-            var loan = await _loanRepository.GetLoan(loanDTOForPut.Id);
             if (loan == null)
             {
                 throw new Exception("Loan not found");
             }
 
-            if (loan.Status != SD.Status_Loan_Pending || loan.Status != SD.Status_Update_Pending || loan.ActualReturnDate != null && loan.ReturnDate < DateOnly.FromDateTime(DateTime.Now))
+            if (loan.Status != SD.Status_Loan_Pending)
             {
                 throw new Exception("Cannot update");
             }
+            loan.ReturnDate = loan.LoanDate.AddDays(loanDTOForPut.LoanDuration);
 
-            if (loanDTOForPut.LoanDate < DateOnly.FromDateTime(DateTime.Now))
-            {
-                throw new Exception("Loan date must be greater than or equal to today");
-            }
-
-            if (loanDTOForPut.LoanDate.AddDays(loanDTOForPut.LoanDuration) < loanDTOForPut.LoanDate)
-            {
-                throw new Exception("Return date must be greater than loan date");
-            }
-        }
-
-        public Task<Loan> CancelLoan(int id)
-        {
-            throw new NotImplementedException();
+            _loanRepository.UpdateLoan(loan);
+            await _loanRepository.SaveAsync();
+            return loan;
         }
 
         public async Task<Loan> ConfirmLoan(int id)
@@ -222,7 +189,7 @@ namespace LMS.Services
             }
             if (loan.Status != SD.Status_Borrowing || loan.Status != SD.Status_Update_Pending)
             {
-                throw new Exception("Loan is not borrowing");
+                throw new Exception("Return failed");
             }
             loan.Status = SD.Status_Return_Pending;
             _loanRepository.UpdateLoan(loan);
@@ -249,9 +216,71 @@ namespace LMS.Services
             return loan;
         }
 
-        public Task<Loan> ConfirmUpdate(int id)
+        /*private async Task CheckRenewLoan(Loan loan, int days)
+        {
+            if (loan == null)
+            {
+                throw new Exception("Loan not found");
+            }
+
+            if (!SD.ValidUpdateStatus.Contains(loan.Status) || loan.ActualReturnDate != null && loan.ReturnDate < DateOnly.FromDateTime(DateTime.Now))
+            {
+                throw new Exception("Cannot update");
+            }
+
+            if (loanDTOForPut.LoanDate < DateOnly.FromDateTime(DateTime.Now))
+            {
+                throw new Exception("Loan date must be greater than or equal to today");
+            }
+
+            if (loanDTOForPut.LoanDate.AddDays(loanDTOForPut.LoanDuration) < loanDTOForPut.LoanDate)
+            {
+                throw new Exception("Return date must be greater than loan date");
+            }
+        }*/
+
+        public async Task<Loan> ConfirmUpdate(int id)
+        {
+            var loan = await _loanRepository.GetLoan(id);
+
+            if (loan == null)
+            {
+                throw new Exception("Loan not found");
+            }
+
+            if (loan.Status != SD.Status_Update_Pending)
+            {
+                throw new Exception("Loan is not update pending");
+            }
+
+            loan.Status = SD.Status_Borrowing;
+            loan.ReturnDate = loan.ActualReturnDate.Value;
+            loan.ActualReturnDate = null;
+            _loanRepository.UpdateLoan(loan);
+            await _loanRepository.SaveAsync();
+            return loan;
+        }
+
+        public Task<Loan> RenewLoan(int id, int days)
         {
             throw new NotImplementedException();
+        }
+
+        public Task<Loan> ConfirmRenew(int id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<Loan> DeleteLoan(int id)
+        {
+            var loan = await _loanRepository.GetLoan(id);
+            if (loan == null)
+            {
+                throw new Exception("Loan not found");
+            }
+            _loanRepository.DeleteLoan(loan);
+            await _loanRepository.SaveAsync();
+            return loan;
         }
     }
 }

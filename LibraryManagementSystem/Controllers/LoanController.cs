@@ -34,13 +34,20 @@ namespace LibraryManagementSystem.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateLoan([FromBody] LoanDTOForPost loanDTO)
         {
-            var loan = await _loanService.AddLoan(loanDTO);
-            return Ok(loan);
+            try
+            {
+                var loan = await _loanService.AddLoan(loanDTO);
+                return Ok(loan);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
         }
 
         [HttpPost]
         [Route("member")]
-        public async Task<IActionResult> CreateLoanMember([FromBody] LoanDTOForPost loanDTO)
+        public async Task<IActionResult> CreateLoanByMember([FromBody] LoanDTOForPost loanDTO)
         {
             int userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             loanDTO.MemberId = userId;
@@ -50,16 +57,45 @@ namespace LibraryManagementSystem.Controllers
             {
                 return BadRequest("You can't borrow more books");
             }
-            var loan = await _loanService.AddLoan(loanDTO);
-            return Ok(loan);
+            try
+            {
+                var loan = await _loanService.AddLoan(loanDTO);
+                return Ok(loan);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+
+        [HttpPost]
+        [Route("confirm/{id}")]
+        public async Task<IActionResult> ConfirmLoan(int id)
+        {
+            try
+            {
+                var loan = await _loanService.ConfirmLoan(id);
+                return Ok(loan);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateLoan(int id, [FromBody] LoanDTOForPut loanDTO)
         {
             loanDTO.Id = id;
-            var loan = await _loanService.UpdateLoan(loanDTO);
-            return Ok(loan);
+            try
+            {
+                var loan = await _loanService.UpdateLoan(loanDTO);
+                return Ok(loan);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
         }
 
     }

@@ -21,6 +21,7 @@ namespace LMS.Domain.Models
         public DateOnly ReturnDate { get; set; }
         [DataType(DataType.DateTime)]
         public DateOnly? ActualReturnDate { get; set; }
+        public DateOnly? UpdateReturnDate { get; set; }
         public string Status { get; set; }
     }
 }

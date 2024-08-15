@@ -13,5 +13,8 @@
         public const string Status_Return_Pending = "ReturnPending";
         public const string Status_Rejected = "Rejected";
         public const string Status_Update_Pending = "UpdatePending";
+
+        public static readonly List<string> ValidUpdateStatus = new List<string> { SD.Status_Loan_Pending, SD.Status_Borrowing, SD.Status_Update_Pending };
+
     }
 }
