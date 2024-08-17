@@ -2,6 +2,7 @@ using LMS.DataAccess.Data;
 using LMS.DataAccess.Repository;
 using LMS.Domain.IRepository;
 using LMS.Domain.IService;
+using LMS.Infrastructure;
 using LMS.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -29,6 +30,7 @@ builder.Services.AddScoped<IBookRepository, BookRepository>();
 builder.Services.AddScoped<IBookService, BookService>();
 builder.Services.AddScoped<ILoanRepository, LoanRepository>();
 builder.Services.AddScoped<ILoanService, LoanService>();
+builder.Services.AddTransient<IEmailSender, EmailSender>();
 
 builder.Services.AddSwaggerGen(options =>
 {

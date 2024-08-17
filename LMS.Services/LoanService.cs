@@ -13,12 +13,18 @@ namespace LMS.Services
         private readonly ILoanRepository _loanRepository;
         private readonly IBookRepository _bookRepository;
         private readonly IMemberRepository _memberRepository;
+        private readonly IEmailSender _emailSender;
 
-        public LoanService(ILoanRepository loanRepository, IBookRepository bookRepository, IMemberRepository memberRepository)
+        public LoanService(
+            ILoanRepository loanRepository,
+            IBookRepository bookRepository,
+            IMemberRepository memberRepository,
+            IEmailSender emailSender)
         {
             _loanRepository = loanRepository;
             _bookRepository = bookRepository;
             _memberRepository = memberRepository;
+            _emailSender = emailSender;
         }
 
         public async Task<List<LoanDTO>> GetAllLoans(LoanFilter loanFilter)
@@ -114,10 +120,18 @@ namespace LMS.Services
                 throw new Exception(e.Message);
             }
 
+            var member = await _memberRepository.GetMember(loanDTOForPost.MemberId);
             var loan = loanDTOForPost.ToLoan();
             if (!isLibrarian)
             {
                 loan.Status = SD.Status_Loan_Pending;
+                await _emailSender.Send(new MailInformation
+                {
+                    Name = member.FirstName + " " + member.LastName,
+                    Email = member.Email,
+                    Subject = "Loan request",
+                    Content = $"Your loan request for book {loanDTOForPost.BookId} has been sent. Please wait for librarian's confirmation"
+                });
             }
             else
             {
