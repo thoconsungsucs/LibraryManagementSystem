@@ -40,7 +40,7 @@ namespace LibraryManagementSystem.Controllers
             }
             try
             {
-                var loan = await _loanService.AddLoan(loanDTO);
+                var loan = await _loanService.AddLoan(loanDTO, isLibrarian: true);
                 return Ok(loan);
             }
             catch (Exception e)
@@ -77,12 +77,12 @@ namespace LibraryManagementSystem.Controllers
         }
 
         [HttpPost]
-        [Route("confirm-loan/{id}")]
-        public async Task<IActionResult> ConfirmLoan(int id)
+        [Route("confirm-loan")]
+        public async Task<IActionResult> ConfirmLoan(LoanConfirmDTO loanConfirmDTO)
         {
             try
             {
-                var loan = await _loanService.ConfirmLoan(id);
+                var loan = await _loanService.ConfirmLoan(loanConfirmDTO);
                 return Ok(loan);
             }
             catch (Exception e)
@@ -110,19 +110,19 @@ namespace LibraryManagementSystem.Controllers
             }
         }
 
-        [HttpPost("confirm-update/{id}")]
-        public async Task<IActionResult> ConfirmUpdateLoan(int id)
+        /*[HttpPost("confirm-update/{id}")]
+        public async Task<IActionResult> ConfirmUpdateLoan(LoanConfirmDTO loanConfirmDTO)
         {
             try
             {
-                var loan = await _loanService.ConfirmUpdate(id);
+                var loan = await _loanService.ConfirmUpdate(loanConfirmDTO.LoanId);
                 return Ok(loan);
             }
             catch (Exception e)
             {
                 return BadRequest(e.Message);
             }
-        }
+        }*/
 
         [HttpPost("renew/{id}")]
         public async Task<IActionResult> RenewLoan(int id, [FromQuery] int days)
@@ -138,12 +138,12 @@ namespace LibraryManagementSystem.Controllers
             }
         }
 
-        [HttpPost("confirm-renew/{id}")]
-        public async Task<IActionResult> ConfirmRenewLoan(int id)
+        [HttpPost("confirm-renew")]
+        public async Task<IActionResult> ConfirmRenewLoan(LoanConfirmDTO loanConfirmDTO)
         {
             try
             {
-                var loan = await _loanService.ConfirmRenew(id);
+                var loan = await _loanService.ConfirmRenew(loanConfirmDTO);
                 return Ok(loan);
             }
             catch (Exception e)

@@ -103,7 +103,7 @@ namespace LMS.Services
             }
         }
 
-        public async Task<Loan> AddLoan(LoanDTOForPost loanDTOForPost)
+        public async Task<Loan> AddLoan(LoanDTOForPost loanDTOForPost, bool isLibrarian = false)
         {
             try
             {
@@ -115,7 +115,14 @@ namespace LMS.Services
             }
 
             var loan = loanDTOForPost.ToLoan();
-            loan.Status = SD.Status_Loan_Pending;
+            if (!isLibrarian)
+            {
+                loan.Status = SD.Status_Loan_Pending;
+            }
+            else
+            {
+                loan.Status = SD.Status_Borrowing;
+            }
             _loanRepository.AddLoan(loan);
 
             var book = await _bookRepository.GetBook(loanDTOForPost.BookId);
@@ -157,15 +164,15 @@ namespace LMS.Services
                 throw new Exception("Cannot update");
             }
             loan.ReturnDate = loan.LoanDate.AddDays(loanDTOForPut.LoanDuration);
-
+            loan.Status = SD.Status_Loan_Pending;
             _loanRepository.UpdateLoan(loan);
             await _loanRepository.SaveAsync();
             return loan;
         }
 
-        public async Task<Loan> ConfirmLoan(int id)
+        public async Task<Loan> ConfirmLoan(LoanConfirmDTO loanConfirmDTO)
         {
-            var loan = await _loanRepository.GetLoan(id);
+            var loan = await _loanRepository.GetLoan(loanConfirmDTO.LoanId);
             if (loan == null)
             {
                 throw new Exception("Loan not found");
@@ -174,7 +181,14 @@ namespace LMS.Services
             {
                 throw new Exception("Loan is not pending");
             }
-            loan.Status = SD.Status_Borrowing;
+            if (!loanConfirmDTO.IsAccepted)
+            {
+                loan.Status = SD.Status_Rejected;
+            }
+            else
+            {
+                loan.Status = SD.Status_Borrowing;
+            }
             _loanRepository.UpdateLoan(loan);
             await _loanRepository.SaveAsync();
             return loan;
@@ -209,6 +223,7 @@ namespace LMS.Services
                 throw new Exception("Loan is not return pending");
             }
             loan.Status = SD.Status_Returned;
+            loan.ActualReturnDate = DateOnly.FromDateTime(DateTime.Now);
             _loanRepository.UpdateLoan(loan);
             //Tracking
             _bookRepository.GetBook(loan.BookId).Result.Available += 1;
@@ -239,7 +254,7 @@ namespace LMS.Services
             }
         }*/
 
-        public async Task<Loan> ConfirmUpdate(int id)
+        /*public async Task<Loan> ConfirmUpdate(int id)
         {
             var loan = await _loanRepository.GetLoan(id);
 
@@ -259,7 +274,7 @@ namespace LMS.Services
             _loanRepository.UpdateLoan(loan);
             await _loanRepository.SaveAsync();
             return loan;
-        }
+        }*/
 
         public async Task<Loan> RenewLoan(int id, int days)
         {
@@ -281,20 +296,31 @@ namespace LMS.Services
             return loan;
         }
 
-        public async Task<Loan> ConfirmRenew(int id)
+        public async Task<Loan> ConfirmRenew(LoanConfirmDTO loanConfirmDTO)
         {
-            var loan = await _loanRepository.GetLoan(id);
-            if (loan == null)
+            var loan = await _loanRepository.GetLoan(loanConfirmDTO.LoanId);
+
+            // Reject renew
+            if (!loanConfirmDTO.IsAccepted)
             {
-                throw new Exception("Loan not found");
+                loan.Status = SD.Status_Borrowing;
+                loan.RenewReturnDate = null;
             }
-            if (loan.Status != SD.Status_Renew_Pending)
+            // Accept renew
+            else
             {
-                throw new Exception("Loan is not renew pending");
+                if (loan == null)
+                {
+                    throw new Exception("Loan not found");
+                }
+                if (loan.Status != SD.Status_Renew_Pending)
+                {
+                    throw new Exception("Loan is not renew pending");
+                }
+                loan.ReturnDate = loan.RenewReturnDate.Value;
+                loan.RenewReturnDate = null;
+                loan.Status = SD.Status_Borrowing;
             }
-            loan.ReturnDate = loan.RenewReturnDate.Value;
-            loan.RenewReturnDate = null;
-            loan.Status = SD.Status_Borrowing;
             _loanRepository.UpdateLoan(loan);
             await _loanRepository.SaveAsync();
             return loan;
