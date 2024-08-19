@@ -42,5 +42,10 @@ namespace LMS.DataAccess.Repository
             await _context.SaveChangesAsync();
         }
 
+        public async Task<string> GetBookTitle(int id)
+        {
+            return (await _context.Books.FirstOrDefaultAsync(b => b.Id == id)).Title;
+        }
+
     }
 }

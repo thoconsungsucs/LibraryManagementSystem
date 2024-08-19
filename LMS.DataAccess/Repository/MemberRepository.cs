@@ -45,5 +45,14 @@ namespace LMS.DataAccess.Repository
             await _context.SaveChangesAsync();
         }
 
+        public async Task<Member> GetMemberInformation(int id)
+        {
+            return await _context.Members.Where(m => m.Id == id).Select(m => new Member
+            {
+                FirstName = m.FirstName,
+                LastName = m.LastName,
+                Email = m.Email,
+            }).FirstOrDefaultAsync();
+        }
     }
 }

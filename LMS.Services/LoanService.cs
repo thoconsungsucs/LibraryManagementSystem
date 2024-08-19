@@ -120,23 +120,12 @@ namespace LMS.Services
                 throw new Exception(e.Message);
             }
 
-            var member = await _memberRepository.GetMember(loanDTOForPost.MemberId);
+            var member = await _memberRepository.GetMemberInformation(loanDTOForPost.MemberId);
             var loan = loanDTOForPost.ToLoan();
-            if (!isLibrarian)
-            {
-                loan.Status = SD.Status_Loan_Pending;
-                await _emailSender.Send(new MailInformation
-                {
-                    Name = member.FirstName + " " + member.LastName,
-                    Email = member.Email,
-                    Subject = "Loan request",
-                    Content = $"Your loan request for book {loanDTOForPost.BookId} has been sent. Please wait for librarian's confirmation"
-                });
-            }
-            else
-            {
-                loan.Status = SD.Status_Borrowing;
-            }
+
+
+            loan.Status = isLibrarian ? SD.Status_Borrowing : SD.Status_Loan_Pending;
+
             _loanRepository.AddLoan(loan);
 
             var book = await _bookRepository.GetBook(loanDTOForPost.BookId);
@@ -144,8 +133,20 @@ namespace LMS.Services
             _bookRepository.UpdateBook(book);
 
             await _loanRepository.SaveAsync();
+
+            await _emailSender.Send(new MailInformation
+            {
+                Name = member.FirstName + " " + member.LastName,
+                Email = member.Email,
+                Subject = "Loan request",
+                Content = $"Your loan request for {book.Title} has been sent. \n" +
+                    $"Loan Date: {loan.LoanDate}\n" +
+                    $"Return Date: {loan.ReturnDate}\n" +
+                    $" Please wait for librarian's confirmation"
+            });
             return loan;
         }
+
 
         public async Task<Loan> CancelLoan(int id)
         {
@@ -160,7 +161,20 @@ namespace LMS.Services
             }
             loan.Status = SD.Status_Cancelled;
             _loanRepository.UpdateLoan(loan);
+
+            var member = await _memberRepository.GetMemberInformation(loan.MemberId);
+            var book = await _bookRepository.GetBook(loan.BookId);
+            book.Available = book.Available + 1;
+            _bookRepository.UpdateBook(book);
             await _loanRepository.SaveAsync();
+
+            await _emailSender.Send(new MailInformation
+            {
+                Name = member.FirstName + " " + member.LastName,
+                Email = member.Email,
+                Subject = "Loan cancel",
+                Content = $"Your loan request for {book.Title} has been cancelled"
+            });
             return loan;
         }
 
@@ -178,9 +192,21 @@ namespace LMS.Services
                 throw new Exception("Cannot update");
             }
             loan.ReturnDate = loan.LoanDate.AddDays(loanDTOForPut.LoanDuration);
-            loan.Status = SD.Status_Loan_Pending;
             _loanRepository.UpdateLoan(loan);
             await _loanRepository.SaveAsync();
+
+            var bookTitle = await _bookRepository.GetBookTitle(loan.BookId);
+            var member = await _memberRepository.GetMemberInformation(loan.MemberId);
+            await _emailSender.Send(new MailInformation
+            {
+                Name = member.FirstName + " " + member.LastName,
+                Email = member.Email,
+                Subject = "Loan update",
+                Content = $"Your loan request for {bookTitle} has been updated. \n" +
+                    $"Loan Date: {loan.LoanDate}\n" +
+                    $"Return Date: {loan.ReturnDate}\n" +
+                    $" Please wait for librarian's confirmation"
+            });
             return loan;
         }
 
@@ -195,16 +221,32 @@ namespace LMS.Services
             {
                 throw new Exception("Loan is not pending");
             }
+
+            var bookTitle = await _bookRepository.GetBookTitle(loan.BookId);
+            var member = await _memberRepository.GetMemberInformation(loan.MemberId);
+            string content = "";
             if (!loanConfirmDTO.IsAccepted)
             {
                 loan.Status = SD.Status_Rejected;
+                content = $"Your loan request for {bookTitle} has been rejected";
             }
             else
             {
+                content = $"Your loan request for {bookTitle} has been confrimed. Please go to library to get it.";
                 loan.Status = SD.Status_Borrowing;
             }
+
             _loanRepository.UpdateLoan(loan);
             await _loanRepository.SaveAsync();
+
+            await _emailSender.Send(new MailInformation
+            {
+                Name = member.FirstName + " " + member.LastName,
+                Email = member.Email,
+                Subject = "Loan confirmation",
+                Content = content
+            });
+
             return loan;
         }
 
@@ -220,8 +262,19 @@ namespace LMS.Services
                 throw new Exception("Return failed");
             }
             loan.Status = SD.Status_Return_Pending;
+            var member = await _memberRepository.GetMemberInformation(loan.MemberId);
+
             _loanRepository.UpdateLoan(loan);
             await _loanRepository.SaveAsync();
+
+            var bookTitle = await _bookRepository.GetBookTitle(loan.BookId);
+            await _emailSender.Send(new MailInformation
+            {
+                Name = member.FirstName + " " + member.LastName,
+                Email = member.Email,
+                Subject = "Loan Returning",
+                Content = $"Please go to library to return the {bookTitle}."
+            });
             return loan;
         }
 
@@ -242,6 +295,15 @@ namespace LMS.Services
             //Tracking
             _bookRepository.GetBook(loan.BookId).Result.Available += 1;
             await _loanRepository.SaveAsync();
+
+            var member = await _memberRepository.GetMemberInformation(loan.MemberId);
+            await _emailSender.Send(new MailInformation
+            {
+                Name = member.FirstName + " " + member.LastName,
+                Email = member.Email,
+                Subject = "Loan Returned",
+                Content = $"Your loan for {loan.Book.Title} has been returned. Thank you for using our service."
+            });
             return loan;
         }
 
@@ -307,18 +369,32 @@ namespace LMS.Services
             loan.RenewReturnDate = loan.ReturnDate.AddDays(days);
             _loanRepository.UpdateLoan(loan);
             await _loanRepository.SaveAsync();
+
+            var member = await _memberRepository.GetMemberInformation(loan.MemberId);
+            var bookTitle = await _bookRepository.GetBookTitle(loan.BookId);
+            await _emailSender.Send(new MailInformation
+            {
+                Name = member.FirstName + " " + member.LastName,
+                Email = member.Email,
+                Subject = "Loan Renewing",
+                Content = $"Your renewing request for {bookTitle} has been sent. Please wait for librarian's confirmation.\n" +
+                $"Loan Return Date: {loan.RenewReturnDate}"
+            });
             return loan;
         }
 
         public async Task<Loan> ConfirmRenew(LoanConfirmDTO loanConfirmDTO)
         {
             var loan = await _loanRepository.GetLoan(loanConfirmDTO.LoanId);
-
+            var bookTitle = await _bookRepository.GetBookTitle(loan.BookId);
+            string content = "";
             // Reject renew
             if (!loanConfirmDTO.IsAccepted)
             {
                 loan.Status = SD.Status_Borrowing;
                 loan.RenewReturnDate = null;
+                content = $"Your renew request for {bookTitle} has been rejected\n" +
+                    $"Return Date: {loan.ReturnDate}";
             }
             // Accept renew
             else
@@ -334,9 +410,21 @@ namespace LMS.Services
                 loan.ReturnDate = loan.RenewReturnDate.Value;
                 loan.RenewReturnDate = null;
                 loan.Status = SD.Status_Borrowing;
+
+                content = $"Your loan for {bookTitle} has been renewed.\n" +
+                $"Loan Return Date: {loan.ReturnDate}";
             }
             _loanRepository.UpdateLoan(loan);
             await _loanRepository.SaveAsync();
+
+            var member = await _memberRepository.GetMemberInformation(loan.MemberId);
+            await _emailSender.Send(new MailInformation
+            {
+                Name = member.FirstName + " " + member.LastName,
+                Email = member.Email,
+                Subject = "Loan Renewing",
+                Content = content
+            });
             return loan;
         }
 

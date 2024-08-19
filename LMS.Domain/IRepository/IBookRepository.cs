@@ -9,6 +9,7 @@ namespace LMS.Domain.IRepository
         void AddBook(Book book);
         void UpdateBook(Book book);
         void DeletBook(Book book);
+        Task<string> GetBookTitle(int id);
         Task SaveAsync();
     }
 }
