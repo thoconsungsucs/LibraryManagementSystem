@@ -144,7 +144,7 @@ namespace LMS.Services
                     $"Return Date: {loan.ReturnDate}\n" +
                     $" Please wait for librarian's confirmation"
             });
-            return loan;
+                return loan;
         }
 
 
