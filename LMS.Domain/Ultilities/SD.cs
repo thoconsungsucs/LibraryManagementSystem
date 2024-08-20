@@ -19,10 +19,11 @@
         public static class ValidationMessage
         {
             public static string Required = "Value is required";
-            public static string PhoneNumberRegex = "Phone number contains numbers and its length is 10";
-            public static string NameRegex = "Name contains letters";
+            public static string PhoneNumberRegex = "Phone number just contains numbers and its length must be 10";
+            public static string NameRegex = "Name just contains letters";
             public static string EmailRegex = "Email is invalid";
-            public static string IdentityId = "Length is 12";
+            public static string IdentityId = "Length must be 12";
+            public static string PasswordRegex = "Password must contain at least one uppercase letter, one lowercase letter, one number and be between 12 and 15 characters long";
         }
 
     }

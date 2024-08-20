@@ -5,7 +5,7 @@ namespace LMS.Domain.DTOs.Librarian
     public class LibrarianDTO
     {
         public int Id { get; set; }
-        public int? IdentityId { get; set; }
+        public string? IdentityId { get; set; }
         [Required]
         [EmailAddress]
         public string Email { get; set; }

@@ -20,13 +20,11 @@ namespace LibraryManagementSystem.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> RegisterAsync(MemberRegisterDTO studentRegisterDTO)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+
             try
             {
                 var newUser = await _accountService.RegisterMemberAsync(studentRegisterDTO);
+
                 return Ok(newUser);
             }
             catch (Exception ex)
@@ -38,13 +36,11 @@ namespace LibraryManagementSystem.Controllers
         [HttpPost("register-librarian")]
         public async Task<IActionResult> RegisterLibrarianAsync(LibrarianRegisterDTO librarianRegisterDTO)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+
             try
             {
                 var newUser = await _accountService.RegisterLibrarianAsync(librarianRegisterDTO);
+
                 return Ok(newUser);
             }
             catch (Exception ex)

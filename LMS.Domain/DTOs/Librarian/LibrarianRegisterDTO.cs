@@ -12,7 +12,7 @@ namespace LMS.Domain.DTOs.Librarian
         [Required]
         [EmailAddress]
         public string Email { get; set; }
-        public int? IdentityId { get; set; }
+        public string IdentityId { get; set; }
         [Required]
         [Length(1, 15, ErrorMessage = "Length is larger than 0 and shorter than 16")]
         public string FirstName { get; set; }

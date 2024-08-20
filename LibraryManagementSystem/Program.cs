@@ -1,7 +1,9 @@
+using FluentValidation;
 using LMS.DataAccess.Data;
 using LMS.DataAccess.Repository;
 using LMS.Domain.IRepository;
 using LMS.Domain.IService;
+using LMS.Domain.Validation;
 using LMS.Infrastructure;
 using LMS.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -31,6 +33,10 @@ builder.Services.AddScoped<IBookService, BookService>();
 builder.Services.AddScoped<ILoanRepository, LoanRepository>();
 builder.Services.AddScoped<ILoanService, LoanService>();
 builder.Services.AddTransient<IEmailSender, EmailSender>();
+
+builder.Services.AddValidatorsFromAssemblyContaining<MemberValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<LibrarianValidator>();
+
 
 builder.Services.AddSwaggerGen(options =>
 {
