@@ -1,4 +1,5 @@
-﻿using LMS.Domain.DTOs.Loan;
+﻿using FluentValidation;
+using LMS.Domain.DTOs.Loan;
 using LMS.Domain.IRepository;
 using LMS.Domain.IService;
 using LMS.Domain.Mappers;
@@ -14,17 +15,20 @@ namespace LMS.Services
         private readonly IBookRepository _bookRepository;
         private readonly IMemberRepository _memberRepository;
         private readonly IEmailSender _emailSender;
+        private readonly IValidator<LoanToDb> _loanValidator;
 
         public LoanService(
             ILoanRepository loanRepository,
             IBookRepository bookRepository,
             IMemberRepository memberRepository,
-            IEmailSender emailSender)
+            IEmailSender emailSender,
+            IValidator<LoanToDb> loanValidator)
         {
             _loanRepository = loanRepository;
             _bookRepository = bookRepository;
             _memberRepository = memberRepository;
             _emailSender = emailSender;
+            _loanValidator = loanValidator;
         }
 
         public async Task<List<LoanDTO>> GetAllLoans(LoanFilter loanFilter)
@@ -100,13 +104,26 @@ namespace LMS.Services
             var book = await _bookRepository.GetBook(loanDTOForPost.BookId);
             if (book == null)
             {
-                throw new Exception("Book not found");
+                throw new Exception(SD.ValidationMessage.BookMessage.NotFound);
             }
 
             if (book.Available == 0)
             {
-                throw new Exception("Book is not available");
+                throw new Exception(SD.ValidationMessage.BookMessage.NotAvailable);
             }
+
+            var member = await _memberRepository.GetMember(loanDTOForPost.MemberId);
+            if (member == null)
+            {
+                throw new Exception(SD.ValidationMessage.UserMessage.NotFound);
+            }
+
+            var validationResult = await _loanValidator.ValidateAsync(loanDTOForPost);
+            if (!validationResult.IsValid)
+            {
+                throw new ValidationException(validationResult.Errors);
+            }
+
         }
 
         public async Task<Loan> AddLoan(LoanDTOForPost loanDTOForPost, bool isLibrarian = false)
@@ -144,7 +161,7 @@ namespace LMS.Services
                     $"Return Date: {loan.ReturnDate}\n" +
                     $" Please wait for librarian's confirmation"
             });
-                return loan;
+            return loan;
         }
 
 
@@ -178,7 +195,7 @@ namespace LMS.Services
             return loan;
         }
 
-        public async Task<Loan> UpdateLoan(LoanDTOForPut loanDTOForPut)
+        private async Task<Loan> CheckForUpdateLoan(LoanDTOForPut loanDTOForPut)
         {
             var loan = await _loanRepository.GetLoan(loanDTOForPut.Id);
 
@@ -191,7 +208,21 @@ namespace LMS.Services
             {
                 throw new Exception("Cannot update");
             }
-            loan.ReturnDate = loan.LoanDate.AddDays(loanDTOForPut.LoanDuration);
+
+            var validationResult = await _loanValidator.ValidateAsync(loanDTOForPut);
+            if (!validationResult.IsValid)
+            {
+                throw new ValidationException(validationResult.Errors);
+            }
+
+            return loan;
+        }
+        public async Task<Loan> UpdateLoan(LoanDTOForPut loanDTOForPut)
+        {
+            var loan = await CheckForUpdateLoan(loanDTOForPut);
+
+            //Updatee
+            loan.ReturnDate = loan.LoanDate.AddDays(loanDTOForPut.Duration);
             _loanRepository.UpdateLoan(loan);
             await _loanRepository.SaveAsync();
 

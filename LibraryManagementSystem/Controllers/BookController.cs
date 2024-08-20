@@ -62,8 +62,8 @@ namespace LibraryManagementSystem.Controllers
         }
 
 
-        [HttpPut]
-        public async Task<ActionResult<Book>> UpdateBook(Book book)
+        [HttpPut("{id}")]
+        public async Task<ActionResult<Book>> UpdateBook(int id, BookDTO bookDTO)
         {
             if (!ModelState.IsValid)
             {
@@ -71,7 +71,7 @@ namespace LibraryManagementSystem.Controllers
             }
             try
             {
-                var updatedBook = await _bookService.UpdateBook(book);
+                var updatedBook = await _bookService.UpdateBook(id, bookDTO);
                 return Ok(updatedBook);
             }
             catch (Exception ex)

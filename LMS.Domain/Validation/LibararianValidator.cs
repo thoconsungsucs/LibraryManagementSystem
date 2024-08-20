@@ -8,14 +8,25 @@ namespace LMS.Domain.Validation
     {
         public LibrarianValidator()
         {
-            RuleFor(l => l.FirstName).NotEmpty().WithMessage(SD.ValidationMessage.Required);
-            RuleFor(l => l.LastName).NotEmpty().WithMessage(SD.ValidationMessage.Required);
-            RuleFor(l => l.FirstName).Matches(@"^[a-zA-Z ]+$").WithMessage(SD.ValidationMessage.NameRegex);
-            RuleFor(l => l.LastName).Matches(@"^[a-zA-Z ]+$").WithMessage(SD.ValidationMessage.NameRegex);
-            RuleFor(l => l.Email).EmailAddress().WithMessage(SD.ValidationMessage.EmailRegex);
-            RuleFor(l => l.PhoneNumber).Matches(@"^\d{10}$").WithMessage(SD.ValidationMessage.PhoneNumberRegex);
-            RuleFor(l => l.IdentityId).Length(12).WithMessage(SD.ValidationMessage.IdentityId);
-            RuleFor(m => m.Password).Matches(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{12,15}$").WithMessage(SD.ValidationMessage.PasswordRegex);
+            RuleFor(l => l.FirstName)
+                .NotEmpty().WithMessage(SD.ValidationMessage.Required)
+                .Matches(@"^[a-zA-Z ]+$").WithMessage(SD.ValidationMessage.UserMessage.NameRegex);
+
+            RuleFor(l => l.LastName)
+                .NotEmpty().WithMessage(SD.ValidationMessage.Required)
+                .Matches(@"^[a-zA-Z ]+$").WithMessage(SD.ValidationMessage.UserMessage.NameRegex);
+
+            RuleFor(l => l.Email)
+                .EmailAddress().WithMessage(SD.ValidationMessage.UserMessage.EmailRegex);
+
+            RuleFor(l => l.PhoneNumber)
+                .Matches(@"^\d{10}$").WithMessage(SD.ValidationMessage.UserMessage.PhoneNumberRegex);
+
+            RuleFor(l => l.IdentityId)
+                .Length(12).WithMessage(SD.ValidationMessage.UserMessage.IdentityId);
+
+            RuleFor(m => m.Password)
+                .Matches(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{12,15}$").WithMessage(SD.ValidationMessage.UserMessage.PasswordRegex);
 
         }
     }

@@ -9,7 +9,7 @@ namespace LMS.Domain.IService
         Task<List<Book>> GetAllBooks(BookFilter filter);
         Task<Book> GetBook(int id);
         Task<Book> AddBook(BookDTO bookDTO);
-        Task<Book> UpdateBook(Book book);
+        Task<Book> UpdateBook(int id, BookDTO bookDTO);
         Task<Book> DeleteBookAsync(int id);
     }
 }

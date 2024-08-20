@@ -1,14 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace LMS.Domain.DTOs.Loan
+﻿namespace LMS.Domain.DTOs.Loan
 {
-    public class LoanDTOForPost
+    public class LoanDTOForPost : LoanToDb
     {
         public int MemberId { get; set; }
         public int BookId { get; set; }
-        public string BookName { get; set; }
-        public DateOnly LoanDate { get; set; }
-        [Range(1, 30)]
-        public int LoanDuration { get; set; }
     }
 }
