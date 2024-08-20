@@ -16,5 +16,14 @@
 
         public static readonly List<string> ValidRenewStatus = new List<string> { SD.Status_Borrowing, SD.Status_Renew_Pending };
 
+        public static class ValidationMessage
+        {
+            public static string Required = "Value is required";
+            public static string PhoneNumberRegex = "Phone number contains numbers and its length is 10";
+            public static string NameRegex = "Name contains letters";
+            public static string EmailRegex = "Email is invalid";
+            public static string IdentityId = "Length is 12";
+        }
+
     }
 }
