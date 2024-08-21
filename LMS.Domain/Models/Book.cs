@@ -24,5 +24,6 @@ namespace LMS.Domain.Models
         public int Quantity { get; set; }
         [Required]
         public int Available { get; set; }
+        public string ImageURL { get; set; }
     }
 }

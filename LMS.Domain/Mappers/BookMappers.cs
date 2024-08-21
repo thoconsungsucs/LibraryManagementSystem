@@ -18,7 +18,8 @@ namespace LMS.Domain.Mappers
                 Pages = bookDTO.Pages,
                 Description = bookDTO.Description,
                 Quantity = bookDTO.Quantity,
-                Available = bookDTO.Quantity
+                Available = bookDTO.Quantity,
+                ImageURL = bookDTO.ImageURL
             };
         }
     }

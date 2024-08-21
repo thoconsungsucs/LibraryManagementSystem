@@ -21,5 +21,6 @@ namespace LMS.Domain.DTOs.Book
         public string? Description { get; set; }
         [Required]
         public int Quantity { get; set; }
+        public string ImageURL { get; set; }
     }
 }

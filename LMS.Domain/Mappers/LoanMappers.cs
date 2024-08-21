@@ -12,7 +12,7 @@ namespace LMS.Domain.Mappers
                 BookId = loanDTOForPost.BookId,
                 MemberId = loanDTOForPost.MemberId,
                 LoanDate = loanDTOForPost.LoanDate,
-                ReturnDate = loanDTOForPost.LoanDate.AddDays(loanDTOForPost.LoanDuration)
+                ReturnDate = loanDTOForPost.LoanDate.AddDays(loanDTOForPost.Duration)
             };
         }
     }

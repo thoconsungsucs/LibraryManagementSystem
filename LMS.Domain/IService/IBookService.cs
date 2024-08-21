@@ -11,5 +11,6 @@ namespace LMS.Domain.IService
         Task<Book> AddBook(BookDTO bookDTO);
         Task<Book> UpdateBook(int id, BookDTO bookDTO);
         Task<Book> DeleteBookAsync(int id);
+        Task<int> GetTotalNumberOfBook();
     }
 }

@@ -21,7 +21,13 @@ namespace LibraryManagementSystem.Controllers
             try
             {
                 var books = await _bookService.GetAllBooks(filter);
-                return Ok(books);
+                var total = await _bookService.GetTotalNumberOfBook();
+                var data = new
+                {
+                    total = Math.Ceiling(total * 1f / filter.PageSize),
+                    books
+                };
+                return Ok(data);
             }
             catch (Exception ex)
             {
@@ -87,6 +93,20 @@ namespace LibraryManagementSystem.Controllers
             {
                 var deletedBook = await _bookService.DeleteBookAsync(id);
                 return Ok(deletedBook);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
+        }
+
+        [HttpGet("total")]
+        public async Task<ActionResult<int>> GetTotalNumberOfBook()
+        {
+            try
+            {
+                var total = await _bookService.GetTotalNumberOfBook();
+                return Ok(total);
             }
             catch (Exception ex)
             {

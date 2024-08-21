@@ -103,6 +103,8 @@ namespace LMS.Services
             book.Pages = bookDTO.Pages;
             book.Description = bookDTO.Description;
             book.Quantity = bookDTO.Quantity;
+            book.ImageURL = bookDTO.ImageURL;
+            book.Available += bookDTO.Quantity - book.Quantity;
 
             _bookRepository.UpdateBook(book);
             await _bookRepository.SaveAsync();
@@ -121,5 +123,9 @@ namespace LMS.Services
             return book;
         }
 
+        public async Task<int> GetTotalNumberOfBook()
+        {
+            return await _bookRepository.GetAllBooks().CountAsync();
+        }
     }
 }
