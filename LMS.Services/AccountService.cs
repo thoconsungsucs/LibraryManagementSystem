@@ -93,7 +93,7 @@ namespace LMS.Services
             }
             try
             {
-                var newUser = await RegisterAsyncHelper(librarian, librarianRegisterDTO.Password);
+                var newUser = await RegisterAsyncHelper(librarian, librarianRegisterDTO.Password, SD.Role_Librarian);
                 return newUser;
             }
             catch (Exception ex)
@@ -103,7 +103,7 @@ namespace LMS.Services
 
         }
 
-        public async Task<NewUser> RegisterAsyncHelper(IdentityUser<int> user, string password)
+        public async Task<NewUser> RegisterAsyncHelper(IdentityUser<int> user, string password, string role = SD.Role_Member)
         {
             try
             {
@@ -113,7 +113,7 @@ namespace LMS.Services
                     var errors = string.Join("\n", result.Errors.Select(e => e.Description));
                     throw new Exception($"User registration failed: \n{errors}");
                 }
-                var roleResult = await _userManager.AddToRoleAsync(user, SD.Role_Member);
+                var roleResult = await _userManager.AddToRoleAsync(user, role);
                 if (!roleResult.Succeeded)
                 {
                     var errors = string.Join("\n", result.Errors.Select(e => e.Description));

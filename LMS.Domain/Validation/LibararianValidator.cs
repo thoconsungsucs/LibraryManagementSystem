@@ -20,7 +20,7 @@ namespace LMS.Domain.Validation
                 .EmailAddress().WithMessage(SD.ValidationMessage.UserMessage.EmailRegex);
 
             RuleFor(l => l.PhoneNumber)
-                .Matches(@"^\d{10}$").WithMessage(SD.ValidationMessage.UserMessage.PhoneNumberRegex);
+                .Matches(@"^0\d{9}$").WithMessage(SD.ValidationMessage.UserMessage.PhoneNumberRegex);
 
             RuleFor(l => l.IdentityId)
                 .Length(12).WithMessage(SD.ValidationMessage.UserMessage.IdentityId);

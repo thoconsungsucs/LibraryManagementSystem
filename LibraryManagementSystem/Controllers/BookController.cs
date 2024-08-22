@@ -20,13 +20,16 @@ namespace LibraryManagementSystem.Controllers
         {
             try
             {
-                var books = await _bookService.GetAllBooks(filter);
-                var total = await _bookService.GetTotalNumberOfBook();
+                var (booksList, count) = await _bookService.GetBooksAndCountAsync(filter);
+
+                // Prepare the response
                 var data = new
                 {
-                    total = Math.Ceiling(total * 1f / filter.PageSize),
-                    books
+                    Count = Math.Ceiling(count * 1f / filter.PageSize),
+                    Books = booksList
                 };
+
+                // Return the response as JSON
                 return Ok(data);
             }
             catch (Exception ex)
@@ -100,18 +103,5 @@ namespace LibraryManagementSystem.Controllers
             }
         }
 
-        [HttpGet("total")]
-        public async Task<ActionResult<int>> GetTotalNumberOfBook()
-        {
-            try
-            {
-                var total = await _bookService.GetTotalNumberOfBook();
-                return Ok(total);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-            }
-        }
     }
 }

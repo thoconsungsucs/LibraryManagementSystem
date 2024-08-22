@@ -1,6 +1,7 @@
 ﻿using LMS.Domain.DTOs.Loan;
 using LMS.Domain.IService;
 using LMS.Domain.Ultilities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -11,15 +12,30 @@ namespace LibraryManagementSystem.Controllers
     public class LoanController : ControllerBase
     {
         private readonly ILoanService _loanService;
+        private readonly ITokenService _tokenService;
 
-        public LoanController(ILoanService loanService)
+        public LoanController(ILoanService loanService, ITokenService tokenService)
         {
             _loanService = loanService;
+            _tokenService = tokenService;
         }
 
         [HttpGet]
+        [Authorize(Roles = "Librarian, Member")]
         public async Task<IActionResult> GetLoans([FromQuery] LoanFilter filter)
         {
+            var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+            var isValidate = _tokenService.ValidateToken(token);
+            if (!isValidate)
+            {
+                return BadRequest("Token is invalid");
+            }
+            var role = User.FindFirstValue(ClaimTypes.Role);
+            if (role != "Librarian")
+            {
+                filter.MemberId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            }
+
             var loans = await _loanService.GetAllLoans(filter);
             return Ok(loans);
         }
@@ -57,7 +73,19 @@ namespace LibraryManagementSystem.Controllers
             {
                 return BadRequest(ModelState);
             }
-            int userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            int userId = 0;
+            var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+            var isValidate = _tokenService.ValidateToken(token);
+
+            if (!isValidate)
+            {
+                return BadRequest("Token is invalid");
+            }
+            else
+            {
+                userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            }
+
             loanDTO.MemberId = userId;
 
             var canBorrow = await _loanService.CanBorrow(userId);
@@ -68,6 +96,20 @@ namespace LibraryManagementSystem.Controllers
             try
             {
                 var loan = await _loanService.AddLoan(loanDTO);
+                return Ok(loan);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+
+        [HttpPost("cancel-loan/{id}")]
+        public async Task<IActionResult> CancelLoan(int id)
+        {
+            try
+            {
+                var loan = await _loanService.CancelLoan(id);
                 return Ok(loan);
             }
             catch (Exception e)
@@ -91,14 +133,13 @@ namespace LibraryManagementSystem.Controllers
             }
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateLoan(int id, [FromBody] LoanDTOForPut loanDTO)
+        [HttpPut]
+        public async Task<IActionResult> UpdateLoan([FromBody] LoanDTOForPut loanDTO)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            loanDTO.Id = id;
             try
             {
                 var loan = await _loanService.UpdateLoan(loanDTO);

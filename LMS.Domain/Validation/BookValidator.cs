@@ -24,10 +24,12 @@ namespace LMS.Domain.Validation
                 .MaximumLength(50).WithMessage(SD.ValidationMessage.BookMessage.CategoryLength);
 
             RuleFor(x => x.Pages)
-                .NotEmpty().WithMessage(SD.ValidationMessage.Required);
+                .NotEmpty().WithMessage(SD.ValidationMessage.Required)
+                .GreaterThan(0).WithMessage(SD.ValidationMessage.NegativeNumber);
 
             RuleFor(x => x.Quantity)
-                .NotEmpty().WithMessage(SD.ValidationMessage.Required);
+                .NotEmpty().WithMessage(SD.ValidationMessage.Required)
+                .GreaterThan(0).WithMessage(SD.ValidationMessage.NegativeNumber);
         }
     }
 }

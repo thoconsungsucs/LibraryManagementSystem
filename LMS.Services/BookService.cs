@@ -17,7 +17,7 @@ namespace LMS.Services
             _bookRepository = bookRepository;
             _bookValidator = bookValidator;
         }
-        public async Task<List<Book>> GetAllBooks(BookFilter filter)
+        public async Task<(List<Book>, int)> GetBooksAndCountAsync(BookFilter filter)
         {
             var books = _bookRepository.GetAllBooks();
 
@@ -56,9 +56,11 @@ namespace LMS.Services
                 books = books.Where(x => filter.Categories.Contains(x.Category));
             }
 
+            var count = await books.CountAsync();
             books = books.Skip((filter.PageNumber - 1) * filter.PageSize).Take(filter.PageSize);
 
-            return await books.ToListAsync();
+            var booksList = await books.ToListAsync();
+            return (booksList, count);
         }
 
         public async Task<Book> GetBook(int id)
@@ -127,5 +129,12 @@ namespace LMS.Services
         {
             return await _bookRepository.GetAllBooks().CountAsync();
         }
+
+        public Task<List<Book>> GetAllBooks(BookFilter filter)
+        {
+            throw new NotImplementedException();
+        }
+
+
     }
 }

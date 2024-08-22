@@ -53,5 +53,27 @@ namespace LMS.Services
             var token = tokenHandler.CreateToken(tokenDiscriptor);
             return tokenHandler.WriteToken(token);
         }
+
+        public bool ValidateToken(string token)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            try
+            {
+                tokenHandler.ValidateToken(token, new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = _key,
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidIssuer = _configuration["JWT:Issuer"],
+                    ValidAudience = _configuration["JWT:Audience"]
+                }, out SecurityToken validatedToken);
+            }
+            catch
+            {
+                return false;
+            }
+            return true;
+        }
     }
 }

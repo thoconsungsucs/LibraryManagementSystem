@@ -63,6 +63,7 @@ namespace LMS.Services
                 loans = loans.Where(l => l.Status == loanFilter.Status);
             }
 
+
             if (!String.IsNullOrEmpty(loanFilter.BookTitle))
             {
                 books = _bookRepository.GetAllBooks().Where(b => b.Title.Contains(loanFilter.BookTitle));
@@ -81,8 +82,10 @@ namespace LMS.Services
                 BookTitle = b.Title,
                 LoanDate = l.LoanDate,
                 ReturnDate = l.ReturnDate,
-                ActualReturnDate = l.ActualReturnDate
-            }).ToListAsync();
+                ActualReturnDate = l.ActualReturnDate,
+                RenewReturnDate = l.RenewReturnDate,
+                Status = l.Status,
+            }).OrderByDescending(l => l.Id).ToListAsync();
             return loanDTOs;
         }
 
@@ -221,7 +224,8 @@ namespace LMS.Services
         {
             var loan = await CheckForUpdateLoan(loanDTOForPut);
 
-            //Updatee
+            //Update
+            loan.LoanDate = loanDTOForPut.LoanDate;
             loan.ReturnDate = loan.LoanDate.AddDays(loanDTOForPut.Duration);
             _loanRepository.UpdateLoan(loan);
             await _loanRepository.SaveAsync();
@@ -253,17 +257,20 @@ namespace LMS.Services
                 throw new Exception("Loan is not pending");
             }
 
-            var bookTitle = await _bookRepository.GetBookTitle(loan.BookId);
+            var book = await _bookRepository.GetBook(loan.BookId);
             var member = await _memberRepository.GetMemberInformation(loan.MemberId);
             string content = "";
             if (!loanConfirmDTO.IsAccepted)
             {
                 loan.Status = SD.Status_Rejected;
-                content = $"Your loan request for {bookTitle} has been rejected";
+                content = $"Your loan request for {book.Title} has been rejected";
+                book.Available += 1;
+                _bookRepository.UpdateBook(book);
+                await _bookRepository.SaveAsync();
             }
             else
             {
-                content = $"Your loan request for {bookTitle} has been confrimed. Please go to library to get it.";
+                content = $"Your loan request for {book.Title} has been confrimed. Please go to library to get it.";
                 loan.Status = SD.Status_Borrowing;
             }
 
@@ -293,6 +300,7 @@ namespace LMS.Services
                 throw new Exception("Return failed");
             }
             loan.Status = SD.Status_Return_Pending;
+            loan.RenewReturnDate = null;
             var member = await _memberRepository.GetMemberInformation(loan.MemberId);
 
             _loanRepository.UpdateLoan(loan);
@@ -417,6 +425,10 @@ namespace LMS.Services
         public async Task<Loan> ConfirmRenew(LoanConfirmDTO loanConfirmDTO)
         {
             var loan = await _loanRepository.GetLoan(loanConfirmDTO.LoanId);
+            if (loan.Status != SD.Status_Renew_Pending)
+            {
+                throw new Exception("Loan is not renew pending");
+            }
             var bookTitle = await _bookRepository.GetBookTitle(loan.BookId);
             string content = "";
             // Reject renew

@@ -19,11 +19,12 @@
         public static class ValidationMessage
         {
             public static string Required = "Value is required";
+            public static string NegativeNumber = "Value must be greater than 0";
 
             public static class UserMessage
             {
                 public static string NotFound = "User not found";
-                public static string PhoneNumberRegex = "Phone number just contains numbers and its length must be 10";
+                public static string PhoneNumberRegex = "Phone number just contains numbers, starts with 0 and its length must be 10";
                 public static string NameRegex = "Name just contains letters";
                 public static string EmailRegex = "Email is invalid";
                 public static string IdentityId = "Length must be 12";

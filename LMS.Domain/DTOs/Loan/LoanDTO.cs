@@ -10,6 +10,7 @@
         public DateOnly LoanDate { get; set; }
         public DateOnly ReturnDate { get; set; }
         public DateOnly? ActualReturnDate { get; set; }
+        public DateOnly? RenewReturnDate { get; set; }
         public string Status { get; set; }
     }
 }
