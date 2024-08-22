@@ -5,7 +5,9 @@ using LMS.Domain.IService;
 using LMS.Domain.Mappers;
 using LMS.Domain.Models;
 using LMS.Domain.Ultilities;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace LMS.Services
 {
@@ -16,19 +18,22 @@ namespace LMS.Services
         private readonly IMemberRepository _memberRepository;
         private readonly IEmailSender _emailSender;
         private readonly IValidator<LoanToDb> _loanValidator;
-
+        private readonly IHttpContextAccessor _httpContextAccessor;
         public LoanService(
             ILoanRepository loanRepository,
             IBookRepository bookRepository,
             IMemberRepository memberRepository,
             IEmailSender emailSender,
-            IValidator<LoanToDb> loanValidator)
+            IValidator<LoanToDb> loanValidator,
+            IHttpContextAccessor httpContextAccessor
+            )
         {
             _loanRepository = loanRepository;
             _bookRepository = bookRepository;
             _memberRepository = memberRepository;
             _emailSender = emailSender;
             _loanValidator = loanValidator;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<List<LoanDTO>> GetAllLoans(LoanFilter loanFilter)
@@ -37,7 +42,7 @@ namespace LMS.Services
             Member member = null;
             IQueryable<Book> books;
 
-
+            //Filter
             if (loanFilter.LoanDate != DateOnly.MinValue)
             {
                 loans = loans.Where(l => l.LoanDate == loanFilter.LoanDate);
@@ -73,6 +78,7 @@ namespace LMS.Services
                 books = _bookRepository.GetAllBooks();
             }
 
+            // Loan join Book
             List<LoanDTO> loanDTOs = await books.Join(loans, b => b.Id, l => l.BookId, (b, l) => new LoanDTO
             {
                 Id = l.Id,
@@ -96,6 +102,7 @@ namespace LMS.Services
 
         public async Task<bool> CanBorrow(int id)
         {
+            // Check if member has any outdate loan => cannot borrow
             var outDateLoanNumber = await _loanRepository.GetAllLoans()
                 .Where(l => l.MemberId == id && (l.Status == SD.Status_Borrowing) && l.ActualReturnDate != null && l.ReturnDate < DateOnly.FromDateTime(DateTime.Now))
                 .CountAsync();
@@ -131,8 +138,15 @@ namespace LMS.Services
 
         public async Task<Loan> AddLoan(LoanDTOForPost loanDTOForPost, bool isLibrarian = false)
         {
+            if (!isLibrarian)
+            {
+                // Authorize member
+                if (!Authorize(loanDTOForPost.MemberId)) throw new Exception("Unauthorized");
+            }
+
             try
             {
+                // Validate loan
                 await CheckLoanForPost(loanDTOForPost);
             }
             catch (Exception e)
@@ -140,20 +154,23 @@ namespace LMS.Services
                 throw new Exception(e.Message);
             }
 
+            // Get member information for sending email
             var member = await _memberRepository.GetMemberInformation(loanDTOForPost.MemberId);
             var loan = loanDTOForPost.ToLoan();
 
-
+            // Librarian auto confirm loan
             loan.Status = isLibrarian ? SD.Status_Borrowing : SD.Status_Loan_Pending;
 
             _loanRepository.AddLoan(loan);
 
+            // Minus available book when borrow
             var book = await _bookRepository.GetBook(loanDTOForPost.BookId);
             book.Available = book.Available - 1;
             _bookRepository.UpdateBook(book);
 
             await _loanRepository.SaveAsync();
 
+            // Send email
             await _emailSender.Send(new MailInformation
             {
                 Name = member.FirstName + " " + member.LastName,
@@ -170,20 +187,35 @@ namespace LMS.Services
 
         public async Task<Loan> CancelLoan(int id)
         {
+
             var loan = await _loanRepository.GetLoan(id);
+            // Authorize member
+            if (!Authorize(loan.MemberId))
+            {
+                throw new Exception("Unauthorized");
+            }
+
+            // Check existing loan
             if (loan == null)
             {
                 throw new Exception("Loan not found");
             }
+
+            // Cancel available when pending
             if (loan.Status != SD.Status_Loan_Pending)
             {
                 throw new Exception("Cannot cancel");
             }
+
+            // Update loan status
             loan.Status = SD.Status_Cancelled;
             _loanRepository.UpdateLoan(loan);
 
+            // Get information for sending email
             var member = await _memberRepository.GetMemberInformation(loan.MemberId);
             var book = await _bookRepository.GetBook(loan.BookId);
+
+            // Plus available book when cancel
             book.Available = book.Available + 1;
             _bookRepository.UpdateBook(book);
             await _loanRepository.SaveAsync();
@@ -222,14 +254,18 @@ namespace LMS.Services
         }
         public async Task<Loan> UpdateLoan(LoanDTOForPut loanDTOForPut)
         {
+            // Validate loan
             var loan = await CheckForUpdateLoan(loanDTOForPut);
-
+            //Authorize member
+            if (!Authorize(loan.MemberId))
+                throw new Exception("Unauthorized");
             //Update
             loan.LoanDate = loanDTOForPut.LoanDate;
             loan.ReturnDate = loan.LoanDate.AddDays(loanDTOForPut.Duration);
             _loanRepository.UpdateLoan(loan);
             await _loanRepository.SaveAsync();
 
+            //Get email information
             var bookTitle = await _bookRepository.GetBookTitle(loan.BookId);
             var member = await _memberRepository.GetMemberInformation(loan.MemberId);
             await _emailSender.Send(new MailInformation
@@ -257,9 +293,13 @@ namespace LMS.Services
                 throw new Exception("Loan is not pending");
             }
 
+            // Get information for sending email
             var book = await _bookRepository.GetBook(loan.BookId);
             var member = await _memberRepository.GetMemberInformation(loan.MemberId);
+
             string content = "";
+
+            // Reject loan
             if (!loanConfirmDTO.IsAccepted)
             {
                 loan.Status = SD.Status_Rejected;
@@ -268,6 +308,7 @@ namespace LMS.Services
                 _bookRepository.UpdateBook(book);
                 await _bookRepository.SaveAsync();
             }
+            // Accept loan
             else
             {
                 content = $"Your loan request for {book.Title} has been confrimed. Please go to library to get it.";
@@ -299,14 +340,18 @@ namespace LMS.Services
             {
                 throw new Exception("Return failed");
             }
+
+            // Update loan status
             loan.Status = SD.Status_Return_Pending;
             loan.RenewReturnDate = null;
-            var member = await _memberRepository.GetMemberInformation(loan.MemberId);
 
             _loanRepository.UpdateLoan(loan);
             await _loanRepository.SaveAsync();
 
+            // Get member information for sending email
+            var member = await _memberRepository.GetMemberInformation(loan.MemberId);
             var bookTitle = await _bookRepository.GetBookTitle(loan.BookId);
+
             await _emailSender.Send(new MailInformation
             {
                 Name = member.FirstName + " " + member.LastName,
@@ -394,21 +439,25 @@ namespace LMS.Services
         public async Task<Loan> RenewLoan(int id, int days)
         {
             var loan = await _loanRepository.GetLoan(id);
+
             if (loan == null)
             {
                 throw new Exception("Loan not found");
             }
 
+            // Check if loan can be renewed
             if (!SD.ValidRenewStatus.Contains(loan.Status) || loan.ActualReturnDate != null && loan.ReturnDate < DateOnly.FromDateTime(DateTime.Now))
             {
                 throw new Exception("Cannot renew");
             }
 
+            // Update loan status
             loan.Status = SD.Status_Renew_Pending;
             loan.RenewReturnDate = loan.ReturnDate.AddDays(days);
             _loanRepository.UpdateLoan(loan);
             await _loanRepository.SaveAsync();
 
+            // Get member information for sending email
             var member = await _memberRepository.GetMemberInformation(loan.MemberId);
             var bookTitle = await _bookRepository.GetBookTitle(loan.BookId);
             await _emailSender.Send(new MailInformation
@@ -425,10 +474,17 @@ namespace LMS.Services
         public async Task<Loan> ConfirmRenew(LoanConfirmDTO loanConfirmDTO)
         {
             var loan = await _loanRepository.GetLoan(loanConfirmDTO.LoanId);
+            // Validate loan
+            if (loan == null)
+            {
+                throw new Exception("Loan not found");
+            }
             if (loan.Status != SD.Status_Renew_Pending)
             {
                 throw new Exception("Loan is not renew pending");
             }
+
+            // Get member information for sending email
             var bookTitle = await _bookRepository.GetBookTitle(loan.BookId);
             string content = "";
             // Reject renew
@@ -481,6 +537,12 @@ namespace LMS.Services
             _loanRepository.DeleteLoan(loan);
             await _loanRepository.SaveAsync();
             return loan;
+        }
+
+        public bool Authorize(int verifiedUserId)
+        {
+            var userId = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            return userId == verifiedUserId.ToString();
         }
 
     }
