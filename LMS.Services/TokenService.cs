@@ -43,7 +43,7 @@ namespace LMS.Services
             var tokenDiscriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = System.DateTime.Now.AddMinutes(30),
+                Expires = System.DateTime.Now.AddDays(1),
                 SigningCredentials = credentials,
                 Issuer = _configuration["JWT:Issuer"],
                 Audience = _configuration["JWT:Audience"]

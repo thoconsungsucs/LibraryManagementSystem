@@ -179,7 +179,7 @@ namespace LMS.Services
                 Content = $"Your loan request for {book.Title} has been sent. \n" +
                     $"Loan Date: {loan.LoanDate}\n" +
                     $"Return Date: {loan.ReturnDate}\n" +
-                    $" Please wait for librarian's confirmation"
+                    $"Please wait for librarian's confirmation"
             });
             return loan;
         }
@@ -276,7 +276,7 @@ namespace LMS.Services
                 Content = $"Your loan request for {bookTitle} has been updated. \n" +
                     $"Loan Date: {loan.LoanDate}\n" +
                     $"Return Date: {loan.ReturnDate}\n" +
-                    $" Please wait for librarian's confirmation"
+                    $"Please wait for librarian's confirmation"
             });
             return loan;
         }

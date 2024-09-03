@@ -48,7 +48,7 @@ namespace LMS.Services
 
             if (!string.IsNullOrEmpty(filter.Publisher))
             {
-                books = books.Where(x => x.Publisher != null && x.Publisher.Contains(filter.Publisher));
+                books = books.Where(x => x.Publisher != null && x.Publisher.ToLower().Contains(filter.Publisher.ToLower()));
             }
 
             if (filter.Categories != null)
