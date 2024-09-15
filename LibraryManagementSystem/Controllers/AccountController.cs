@@ -2,6 +2,7 @@
 using LMS.Domain.DTOs.Librarian;
 using LMS.Domain.DTOs.Member;
 using LMS.Domain.IService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LibraryManagementSystem.Controllers
@@ -34,6 +35,7 @@ namespace LibraryManagementSystem.Controllers
         }
 
         [HttpPost("register-librarian")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> RegisterLibrarianAsync(LibrarianRegisterDTO librarianRegisterDTO)
         {
 

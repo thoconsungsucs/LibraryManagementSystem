@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using LMS.Domain.DTOs.Book;
+using LMS.Domain.Exceptions;
 using LMS.Domain.IRepository;
 using LMS.Domain.IService;
 using LMS.Domain.Mappers;
@@ -17,49 +18,56 @@ namespace LMS.Services
             _bookRepository = bookRepository;
             _bookValidator = bookValidator;
         }
-        public async Task<(List<Book>, int)> GetBooksAndCountAsync(BookFilter filter)
-        {
-            var books = _bookRepository.GetAllBooks();
 
+        public IQueryable<Book> FilterBook(IQueryable<Book> books, BookFilter filter)
+        {
             if (filter.IsAvailable)
             {
-                books = books.Where(x => x.Available > 0);
+                books = books.Where(b => b.Available > 0);
             }
 
             if (!string.IsNullOrEmpty(filter.Title))
             {
-                books = books.Where(x => x.Title.Contains(filter.Title));
+                books = books.Where(b => b.Title.Contains(filter.Title));
             }
 
             if (!string.IsNullOrEmpty(filter.Author))
             {
-                books = books.Where(x => x.Author.Contains(filter.Author));
+                books = books.Where(b => b.Author.Contains(filter.Author));
             }
 
             if (filter.Years != null)
             {
-                books = books.Where(x => x.PublishedDate != null && filter.Years.Contains(x.PublishedDate.Value.Year));
+                books = books.Where(b => b.PublishedDate != null && filter.Years.Contains(b.PublishedDate.Value.Year));
             }
 
             if (filter.Pages != null && filter.Pages != 0)
             {
-                books = books.Where(x => x.Pages <= filter.Pages);
+                books = books.Where(b => b.Pages <= filter.Pages);
             }
 
             if (!string.IsNullOrEmpty(filter.Publisher))
             {
-                books = books.Where(x => x.Publisher != null && x.Publisher.ToLower().Contains(filter.Publisher.ToLower()));
+                books = books.Where(b => b.Publisher != null && b.Publisher.ToLower().Contains(filter.Publisher.ToLower()));
             }
 
             if (filter.Categories != null)
             {
-                books = books.Where(x => filter.Categories.Contains(x.Category));
+                books = books.Where(b => filter.Categories.Contains(b.Category));
             }
 
-            var count = await books.CountAsync();
             books = books.Skip((filter.PageNumber - 1) * filter.PageSize).Take(filter.PageSize);
+            return books;
+        }
 
+        public async Task<(List<Book>, int)> GetBooksAndCountAsync(BookFilter filter)
+        {
+            var books = _bookRepository.GetAllBooks();
+            books = FilterBook(books, filter);
+
+            var count = await books.CountAsync();
             var booksList = await books.ToListAsync();
+
             return (booksList, count);
         }
 
@@ -68,12 +76,12 @@ namespace LMS.Services
             return await _bookRepository.GetBook(id);
         }
 
-        public async Task<Book> AddBook(BookDTO bookDTO)
+        public async Task<Result<Book>> AddBook(BookDTO bookDTO)
         {
             var validationResult = await _bookValidator.ValidateAsync(bookDTO);
             if (!validationResult.IsValid)
             {
-                throw new ValidationException(validationResult.Errors);
+                return Result.Failure<Book>(new ValidationError(validationResult));
             }
             var book = bookDTO.ToBook();
             _bookRepository.AddBook(book);

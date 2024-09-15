@@ -71,7 +71,9 @@ namespace LMS.Services
 
             if (!String.IsNullOrEmpty(loanFilter.BookTitle))
             {
-                books = _bookRepository.GetAllBooks().Where(b => b.Title.Contains(loanFilter.BookTitle));
+                books = _bookRepository.GetAllBooks()
+                    .Where(b => b.Title.Contains(loanFilter.BookTitle))
+                    .AsQueryable(); // Filter trước khi join
             }
             else
             {
@@ -91,8 +93,53 @@ namespace LMS.Services
                 ActualReturnDate = l.ActualReturnDate,
                 RenewReturnDate = l.RenewReturnDate,
                 Status = l.Status,
-            }).OrderByDescending(l => l.Id).ToListAsync();
+            })
+                .AsSplitQuery()
+                .OrderByDescending(l => l.Id)
+                .ToListAsync();
             return loanDTOs;
+
+            //if (!String.IsNullOrEmpty(loanFilter.BookTitle))
+            //{
+            //    List<LoanDTO> loanDTOs = await loans.Include(l => l.Book)
+            //        .Select(l => new LoanDTO
+            //        {
+            //            Id = l.Id,
+            //            MemberId = l.MemberId,
+            //            MemberName = member != null ? $"{member.FirstName} {member.LastName}" : $"{l.Member.FirstName} {l.Member.LastName}",
+            //            BookId = l.BookId,
+            //            BookTitle = l.Book.Title,
+            //            LoanDate = l.LoanDate,
+            //            ReturnDate = l.ReturnDate,
+            //            ActualReturnDate = l.ActualReturnDate,
+            //            RenewReturnDate = l.RenewReturnDate,
+            //            Status = l.Status,
+            //        })
+            //        .AsSplitQuery()
+            //        .Where(l => l.BookTitle.Contains(loanFilter.BookTitle))
+            //        .OrderByDescending(l => l.Id)
+            //        .ToListAsync();
+            //}
+            //else
+            //{
+            //    List<LoanDTO> loanDTOs = await loans.Include(l => l.Book)
+            //        .Select(l => new LoanDTO
+            //        {
+            //            Id = l.Id,
+            //            MemberId = l.MemberId,
+            //            MemberName = member != null ? $"{member.FirstName} {member.LastName}" : $"{l.Member.FirstName} {l.Member.LastName}",
+            //            BookId = l.BookId,
+            //            BookTitle = l.Book.Title,
+            //            LoanDate = l.LoanDate,
+            //            ReturnDate = l.ReturnDate,
+            //            ActualReturnDate = l.ActualReturnDate,
+            //            RenewReturnDate = l.RenewReturnDate,
+            //            Status = l.Status,
+            //        })
+            //        .OrderByDescending(l => l.Id)
+            //        .ToListAsync();
+            //    return loanDTOs;
+            //}
         }
 
         public async Task<Loan> GetLoan(int id)

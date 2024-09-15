@@ -16,6 +16,7 @@ namespace LibraryManagementSystem.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin, Librarian")]
         public async Task<ActionResult<IEnumerable<MemberDTO>>> GetAllMembers()
         {
             try

@@ -2,6 +2,7 @@
 using LMS.Domain.IService;
 using LMS.Domain.Models;
 using LMS.Domain.Ultilities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LibraryManagementSystem.Controllers
@@ -25,7 +26,7 @@ namespace LibraryManagementSystem.Controllers
                 // Prepare the response
                 var data = new
                 {
-                    Count = Math.Ceiling(count * 1f / filter.PageSize),
+                    NumberOfPage = Math.Ceiling(count * 1f / filter.PageSize),
                     Books = booksList
                 };
 
@@ -53,6 +54,7 @@ namespace LibraryManagementSystem.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Librarian")]
         public async Task<ActionResult<Book>> AddBook(BookDTO bookDTO)
         {
             if (!ModelState.IsValid)
@@ -61,8 +63,12 @@ namespace LibraryManagementSystem.Controllers
             }
             try
             {
-                var newBook = await _bookService.AddBook(bookDTO);
-                return CreatedAtAction(nameof(GetBook), new { id = newBook.Id }, newBook);
+                var result = await _bookService.AddBook(bookDTO);
+                if (!result.IsSuccess)
+                {
+                    return BadRequest(result.Error);
+                }
+                return CreatedAtAction(nameof(GetBook), new { id = result.Value.Id }, result.Value);
             }
             catch (Exception ex)
             {
@@ -72,6 +78,7 @@ namespace LibraryManagementSystem.Controllers
 
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Librarian")]
         public async Task<ActionResult<Book>> UpdateBook(int id, BookDTO bookDTO)
         {
             if (!ModelState.IsValid)
@@ -90,6 +97,7 @@ namespace LibraryManagementSystem.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Librarian")]
         public async Task<ActionResult<Book>> DeleteBook(int id)
         {
             try

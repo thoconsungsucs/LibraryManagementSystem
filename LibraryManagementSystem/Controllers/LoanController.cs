@@ -48,6 +48,7 @@ namespace LibraryManagementSystem.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Librarian")]
         public async Task<IActionResult> CreateLoan([FromBody] LoanDTOForPost loanDTO)
         {
             if (!ModelState.IsValid)
@@ -66,6 +67,7 @@ namespace LibraryManagementSystem.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Member")]
         [Route("member")]
         public async Task<IActionResult> CreateLoanByMember([FromBody] LoanDTOForPost loanDTO)
         {
@@ -105,6 +107,7 @@ namespace LibraryManagementSystem.Controllers
         }
 
         [HttpPost("cancel-loan/{id}")]
+        [Authorize]
         public async Task<IActionResult> CancelLoan(int id)
         {
             try
@@ -120,6 +123,7 @@ namespace LibraryManagementSystem.Controllers
 
         [HttpPost]
         [Route("confirm-loan")]
+        [Authorize]
         public async Task<IActionResult> ConfirmLoan(LoanConfirmDTO loanConfirmDTO)
         {
             try
@@ -134,6 +138,7 @@ namespace LibraryManagementSystem.Controllers
         }
 
         [HttpPut]
+        [Authorize]
         public async Task<IActionResult> UpdateLoan([FromBody] LoanDTOForPut loanDTO)
         {
             if (!ModelState.IsValid)
@@ -166,6 +171,7 @@ namespace LibraryManagementSystem.Controllers
         }*/
 
         [HttpPost("renew/{id}")]
+        [Authorize]
         public async Task<IActionResult> RenewLoan(int id, [FromQuery] int days)
         {
             try
@@ -180,6 +186,7 @@ namespace LibraryManagementSystem.Controllers
         }
 
         [HttpPost("confirm-renew")]
+        [Authorize]
         public async Task<IActionResult> ConfirmRenewLoan(LoanConfirmDTO loanConfirmDTO)
         {
             try
@@ -194,6 +201,7 @@ namespace LibraryManagementSystem.Controllers
         }
 
         [HttpPost("return/{id}")]
+        [Authorize]
         public async Task<IActionResult> ReturnBook(int id)
         {
             try
@@ -208,6 +216,7 @@ namespace LibraryManagementSystem.Controllers
         }
 
         [HttpPost("confirm-return/{id}")]
+        [Authorize]
         public async Task<IActionResult> ConfirmReturn(int id)
         {
             try
@@ -222,6 +231,7 @@ namespace LibraryManagementSystem.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteLoan(int id)
         {
             try
