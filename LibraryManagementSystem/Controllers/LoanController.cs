@@ -1,4 +1,5 @@
 ﻿using LMS.Domain.DTOs.Loan;
+using LMS.Domain.Exceptions;
 using LMS.Domain.IService;
 using LMS.Domain.Ultilities;
 using Microsoft.AspNetCore.Authorization;
@@ -24,12 +25,6 @@ namespace LibraryManagementSystem.Controllers
         [Authorize(Roles = "Librarian, Member")]
         public async Task<IActionResult> GetLoans([FromQuery] LoanFilter filter)
         {
-            var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-            var isValidate = _tokenService.ValidateToken(token);
-            if (!isValidate)
-            {
-                return BadRequest("Token is invalid");
-            }
             var role = User.FindFirstValue(ClaimTypes.Role);
             if (role != "Librarian")
             {
@@ -75,18 +70,8 @@ namespace LibraryManagementSystem.Controllers
             {
                 return BadRequest(ModelState);
             }
-            int userId = 0;
-            var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-            var isValidate = _tokenService.ValidateToken(token);
 
-            if (!isValidate)
-            {
-                return BadRequest("Token is invalid");
-            }
-            else
-            {
-                userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            }
+            int userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
             loanDTO.MemberId = userId;
 
@@ -95,14 +80,18 @@ namespace LibraryManagementSystem.Controllers
             {
                 return BadRequest("You can't borrow more books");
             }
+
             try
             {
-                var loan = await _loanService.AddLoan(loanDTO);
-                return Ok(loan);
+                var loanResult = await _loanService.AddLoan(loanDTO);
+
+                return loanResult.IsSuccess ?
+                    Ok(loanResult.Value) :
+                    BadRequest(ApiResult.ToProblemDetails(loanResult));
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                return BadRequest(e.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
 

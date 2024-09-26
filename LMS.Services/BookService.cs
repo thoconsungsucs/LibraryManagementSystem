@@ -71,9 +71,14 @@ namespace LMS.Services
             return (booksList, count);
         }
 
-        public async Task<Book> GetBook(int id)
+        public async Task<Result<Book>> GetBook(int id)
         {
-            return await _bookRepository.GetBook(id);
+            var book = await _bookRepository.GetBook(id);
+            if (book == null)
+            {
+                return BookError.NotFound(id);
+            }
+            return book;
         }
 
         public async Task<Result<Book>> AddBook(BookDTO bookDTO)
@@ -81,7 +86,7 @@ namespace LMS.Services
             var validationResult = await _bookValidator.ValidateAsync(bookDTO);
             if (!validationResult.IsValid)
             {
-                return Result.Failure<Book>(new ValidationError(validationResult));
+                return new ValidationError(validationResult);
             }
             var book = bookDTO.ToBook();
             _bookRepository.AddBook(book);
@@ -89,18 +94,18 @@ namespace LMS.Services
             return book;
         }
 
-        public async Task<Book> UpdateBook(int id, BookDTO bookDTO)
+        public async Task<Result<Book>> UpdateBook(int id, BookDTO bookDTO)
         {
             var book = await _bookRepository.GetBook(id);
             if (book == null)
             {
-                throw new Exception("Book not found");
+                return BookError.NotFound(id);
             }
 
             var validationResult = await _bookValidator.ValidateAsync(bookDTO);
             if (!validationResult.IsValid)
             {
-                throw new ValidationException(validationResult.Errors);
+                return new ValidationError(validationResult);
             }
 
             //Update book
@@ -121,12 +126,12 @@ namespace LMS.Services
             return book;
         }
 
-        public async Task<Book> DeleteBookAsync(int id)
+        public async Task<Result<Book>> DeleteBookAsync(int id)
         {
             var book = await _bookRepository.GetBook(id);
             if (book == null)
             {
-                throw new Exception("Book not found");
+                return BookError.NotFound(id);
             }
             _bookRepository.DeletBook(book);
             await _bookRepository.SaveAsync();

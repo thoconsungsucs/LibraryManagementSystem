@@ -1,13 +1,14 @@
 ﻿using LMS.Domain.DTOs.Account;
 using LMS.Domain.DTOs.Librarian;
 using LMS.Domain.DTOs.Member;
+using LMS.Domain.Exceptions;
 
 namespace LMS.Domain.IService
 {
-    public interface IAccountRepository
+    public interface IAccountService
     {
-        Task<NewUser> RegisterMemberAsync(MemberRegisterDTO studentRegisterDTO);
-        Task<NewUser> RegisterLibrarianAsync(LibrarianRegisterDTO librarianRegisterDTO);
-        Task<NewUser> LoginAsync(LoginDTO loginDTO);
+        Task<Result<NewUser>> RegisterMemberAsync(MemberRegisterDTO studentRegisterDTO);
+        Task<Result<NewUser>> RegisterLibrarianAsync(LibrarianRegisterDTO librarianRegisterDTO);
+        Task<Result<NewUser>> LoginAsync(LoginDTO loginDTO);
     }
 }

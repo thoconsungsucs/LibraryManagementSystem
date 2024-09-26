@@ -2,6 +2,7 @@
 using LMS.Domain.DTOs.Account;
 using LMS.Domain.DTOs.Librarian;
 using LMS.Domain.DTOs.Member;
+using LMS.Domain.Exceptions;
 using LMS.Domain.IService;
 using LMS.Domain.Mappers;
 using LMS.Domain.Ultilities;
@@ -9,7 +10,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace LMS.Services
 {
-    public class AccountService : IAccountRepository
+    public class AccountService : IAccountService
     {
         private readonly ITokenService _tokenService;
         private readonly UserManager<IdentityUser<int>> _userManager;
@@ -32,19 +33,19 @@ namespace LMS.Services
             _librarianValidator = librarianValidator;
         }
 
-        public async Task<NewUser> LoginAsync(LoginDTO loginDTO)
+        public async Task<Result<NewUser>> LoginAsync(LoginDTO loginDTO)
         {
             try
             {
                 var user = await _userManager.FindByNameAsync(loginDTO.UserName);
                 if (user == null)
                 {
-                    throw new Exception("User not found or password is invalid.");
+                    return UserError.InvalidCredentials();
                 }
                 var result = await _signInManager.CheckPasswordSignInAsync(user, loginDTO.Password, false);
                 if (!result.Succeeded)
                 {
-                    throw new Exception("User not found or password is invalid.");
+                    return UserError.InvalidCredentials();
                 }
 
                 var roles = await _userManager.GetRolesAsync(user);
@@ -60,7 +61,7 @@ namespace LMS.Services
             }
         }
 
-        public async Task<NewUser> RegisterMemberAsync(MemberRegisterDTO memberRegisterDTO)
+        public async Task<Result<NewUser>> RegisterMemberAsync(MemberRegisterDTO memberRegisterDTO)
         {
             var validationResult = await _memberValidator.ValidateAsync(memberRegisterDTO);
             var member = memberRegisterDTO.ToMember();
@@ -82,7 +83,7 @@ namespace LMS.Services
 
         }
 
-        public async Task<NewUser> RegisterLibrarianAsync(LibrarianRegisterDTO librarianRegisterDTO)
+        public async Task<Result<NewUser>> RegisterLibrarianAsync(LibrarianRegisterDTO librarianRegisterDTO)
         {
             var validationResult = await _librarianValidator.ValidateAsync(librarianRegisterDTO);
             var librarian = librarianRegisterDTO.ToLibrarian();
@@ -103,7 +104,7 @@ namespace LMS.Services
 
         }
 
-        public async Task<NewUser> RegisterAsyncHelper(IdentityUser<int> user, string password, string role = SD.Role_Member)
+        public async Task<Result<NewUser>> RegisterAsyncHelper(IdentityUser<int> user, string password, string role = SD.Role_Member)
         {
             try
             {

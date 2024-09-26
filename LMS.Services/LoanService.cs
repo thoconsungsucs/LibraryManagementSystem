@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using LMS.Domain.DTOs.Loan;
+using LMS.Domain.Exceptions;
 using LMS.Domain.IRepository;
 using LMS.Domain.IService;
 using LMS.Domain.Mappers;
@@ -156,79 +157,84 @@ namespace LMS.Services
             return outDateLoanNumber < 1;
         }
 
-        private async Task CheckLoanForPost(LoanDTOForPost loanDTOForPost)
+        private async Task<Result<Loan>> CheckLoanForPost(LoanDTOForPost loanDTOForPost)
         {
+            var isAuthorized = Authorize(loanDTOForPost.MemberId);
+            if (!isAuthorized)
+            {
+                return UserError.Unauthorized();
+            }
+
             var book = await _bookRepository.GetBook(loanDTOForPost.BookId);
+
             if (book == null)
             {
-                throw new Exception(SD.ValidationMessage.BookMessage.NotFound);
+                return BookError.NotFound(loanDTOForPost.BookId);
             }
 
             if (book.Available == 0)
             {
-                throw new Exception(SD.ValidationMessage.BookMessage.NotAvailable);
+                return BookError.InsufficientStock();
             }
 
             var member = await _memberRepository.GetMember(loanDTOForPost.MemberId);
             if (member == null)
             {
-                throw new Exception(SD.ValidationMessage.UserMessage.NotFound);
+                return UserError.NotFound(loanDTOForPost.MemberId);
             }
 
             var validationResult = await _loanValidator.ValidateAsync(loanDTOForPost);
             if (!validationResult.IsValid)
             {
-                throw new ValidationException(validationResult.Errors);
+                return new ValidationError(validationResult);
             }
 
+            return Result<Loan>.Success();
         }
 
-        public async Task<Loan> AddLoan(LoanDTOForPost loanDTOForPost, bool isLibrarian = false)
+        public async Task<Result<Loan>> AddLoan(LoanDTOForPost loanDTOForPost, bool isLibrarian = false)
         {
-            if (!isLibrarian)
-            {
-                // Authorize member
-                if (!Authorize(loanDTOForPost.MemberId)) throw new Exception("Unauthorized");
-            }
+
+            // Validate loan
+            var validationResult = await CheckLoanForPost(loanDTOForPost);
+            if (!validationResult.IsSuccess) return validationResult;
 
             try
             {
-                // Validate loan
-                await CheckLoanForPost(loanDTOForPost);
+                // Get member information for sending email
+                var member = await _memberRepository.GetMemberInformation(loanDTOForPost.MemberId);
+                var loan = loanDTOForPost.ToLoan();
+
+                // Librarian auto confirm loan
+                loan.Status = isLibrarian ? SD.Status_Borrowing : SD.Status_Loan_Pending;
+
+                _loanRepository.AddLoan(loan);
+
+                // Minus available book when borrow
+                var book = await _bookRepository.GetBook(loanDTOForPost.BookId);
+                book.Available = book.Available - 1;
+                _bookRepository.UpdateBook(book);
+
+                await _loanRepository.SaveAsync();
+
+                // Send email
+                await _emailSender.Send(new MailInformation
+                {
+                    Name = member.FirstName + " " + member.LastName,
+                    Email = member.Email,
+                    Subject = "Loan request",
+                    Content = $"Your loan request for {book.Title} has been sent. \n" +
+                        $"Loan Date: {loan.LoanDate}\n" +
+                        $"Return Date: {loan.ReturnDate}\n" +
+                        $"Please wait for librarian's confirmation"
+                });
+
+                return loan;
             }
             catch (Exception e)
             {
                 throw new Exception(e.Message);
             }
-
-            // Get member information for sending email
-            var member = await _memberRepository.GetMemberInformation(loanDTOForPost.MemberId);
-            var loan = loanDTOForPost.ToLoan();
-
-            // Librarian auto confirm loan
-            loan.Status = isLibrarian ? SD.Status_Borrowing : SD.Status_Loan_Pending;
-
-            _loanRepository.AddLoan(loan);
-
-            // Minus available book when borrow
-            var book = await _bookRepository.GetBook(loanDTOForPost.BookId);
-            book.Available = book.Available - 1;
-            _bookRepository.UpdateBook(book);
-
-            await _loanRepository.SaveAsync();
-
-            // Send email
-            await _emailSender.Send(new MailInformation
-            {
-                Name = member.FirstName + " " + member.LastName,
-                Email = member.Email,
-                Subject = "Loan request",
-                Content = $"Your loan request for {book.Title} has been sent. \n" +
-                    $"Loan Date: {loan.LoanDate}\n" +
-                    $"Return Date: {loan.ReturnDate}\n" +
-                    $"Please wait for librarian's confirmation"
-            });
-            return loan;
         }
 
 

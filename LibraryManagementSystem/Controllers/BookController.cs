@@ -1,4 +1,5 @@
 ﻿using LMS.Domain.DTOs.Book;
+using LMS.Domain.Exceptions;
 using LMS.Domain.IService;
 using LMS.Domain.Models;
 using LMS.Domain.Ultilities;
@@ -44,8 +45,8 @@ namespace LibraryManagementSystem.Controllers
         {
             try
             {
-                var book = await _bookService.GetBook(id);
-                return Ok(book);
+                var bookResult = await _bookService.GetBook(id);
+                return bookResult.IsSuccess ? bookResult.Value : NotFound(ApiResult.ToProblemDetails(bookResult));
             }
             catch (Exception ex)
             {
@@ -55,40 +56,33 @@ namespace LibraryManagementSystem.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Librarian")]
-        public async Task<ActionResult<Book>> AddBook(BookDTO bookDTO)
+        public async Task<IActionResult> AddBook(BookDTO bookDTO)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
             try
             {
-                var result = await _bookService.AddBook(bookDTO);
-                if (!result.IsSuccess)
-                {
-                    return BadRequest(result.Error);
-                }
-                return CreatedAtAction(nameof(GetBook), new { id = result.Value.Id }, result.Value);
+                var createdBookResult = await _bookService.AddBook(bookDTO);
+                return createdBookResult.IsSuccess ?
+                    CreatedAtAction(nameof(GetBook), new { id = createdBookResult.Value.Id }, createdBookResult.Value) :
+                    BadRequest(ApiResult.ToProblemDetails(createdBookResult));
+
             }
             catch (Exception ex)
             {
+                // Return 500 Internal Server Error with the exception message
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
+
 
 
         [HttpPut("{id}")]
         [Authorize(Roles = "Librarian")]
         public async Task<ActionResult<Book>> UpdateBook(int id, BookDTO bookDTO)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
             try
             {
-                var updatedBook = await _bookService.UpdateBook(id, bookDTO);
-                return Ok(updatedBook);
+                var updatedBookResult = await _bookService.UpdateBook(id, bookDTO);
+                return updatedBookResult.IsSuccess ? Ok(updatedBookResult.Value) : NotFound(ApiResult.ToProblemDetails(updatedBookResult));
             }
             catch (Exception ex)
             {
@@ -102,8 +96,8 @@ namespace LibraryManagementSystem.Controllers
         {
             try
             {
-                var deletedBook = await _bookService.DeleteBookAsync(id);
-                return Ok(deletedBook);
+                var deletedBookResult = await _bookService.DeleteBookAsync(id);
+                return deletedBookResult.IsSuccess ? NoContent() : NotFound(ApiResult.ToProblemDetails(deletedBookResult));
             }
             catch (Exception ex)
             {

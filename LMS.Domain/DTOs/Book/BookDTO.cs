@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace LMS.Domain.DTOs.Book
 {
@@ -11,6 +12,7 @@ namespace LMS.Domain.DTOs.Book
         [StringLength(100)]
         public string Author { get; set; }
         public string? Publisher { get; set; }
+        [JsonIgnore]
         public DateOnly? PublishedDate { get; set; }
         [Required]
         public string ISBN { get; set; }

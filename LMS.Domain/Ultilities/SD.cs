@@ -18,36 +18,45 @@
 
         public static class ValidationMessage
         {
-            public static string Required = "Value is required";
-            public static string NegativeNumber = "Value must be greater than 0";
+            public const string Required = "Value is required";
+            public const string NegativeNumber = "Value must be greater than 0";
 
             public static class UserMessage
             {
-                public static string NotFound = "User not found";
-                public static string PhoneNumberRegex = "Phone number just contains numbers, starts with 0 and its length must be 10";
-                public static string NameRegex = "Name just contains letters";
-                public static string EmailRegex = "Email is invalid";
-                public static string IdentityId = "Length must be 12";
-                public static string PasswordRegex = "Password must contain at least one uppercase letter, one lowercase letter, one number and be between 12 and 15 characters long";
+                public const string NotFound = "User not found";
+                public const string PhoneNumberRegex = "Phone number just contains numbers, starts with 0 and its length must be 10";
+                public const string NameRegex = "Name just contains letters";
+                public const string EmailRegex = "Email is invalid";
+                public const string IdentityId = "Length must be 12";
+                public const string PasswordRegex = "Password must contain at least one uppercase letter, one lowercase letter, one number and be between 12 and 15 characters long";
             }
 
             public static class BookMessage
             {
-                public static string NotFound = "Book not found";
-                public static string NotAvailable = "Book is not available";
-                public static string TitleLength = "Title must be between 3 and 50 characters";
-                public static string AuthorLength = "Author must be between 3 and 50 characters";
-                public static string CategoryLength = "Category must be between 3 and 50 characters";
+                public const string NotFound = "Book not found";
+                public const string NotAvailable = "Book is not available";
+                public const string TitleLength = "Title must be between 3 and 50 characters";
+                public const string AuthorLength = "Author must be between 3 and 50 characters";
+                public const string CategoryLength = "Category must be between 3 and 50 characters";
 
             }
 
             public static class LoanMessage
             {
-                public static string NotFound = "Loan not found";
-                public static string LoanDateError = "Loan date must be greater or equal now";
-                public static string DurationLength = "Duration must be greater than 0 and less than 30";
+                public const string NotFound = "Loan not found";
+                public const string LoanDateError = "Loan date must be greater or equal now";
+                public const string DurationLength = "Duration must be greater than 0 and less than 30";
             }
 
+        }
+
+        public static class ErrorCode
+        {
+            public const string ValidationError = "ValidationError";
+            public const string NotFound = "NotFound";
+            public const string NullObject = "NullObject";
+            public const string InsufficientStock = "InsufficientStock";
+            public const string Unauthorized = "Unauthorized";
         }
 
     }

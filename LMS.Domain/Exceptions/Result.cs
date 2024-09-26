@@ -18,6 +18,7 @@
         public static Result Failure(Error error) => new Result(false, error);
         public static Result<TValue> Success<TValue>(TValue value) => new Result<TValue>(value, true, Error.None);
         public static Result<TValue> Failure<TValue>(Error error) => new Result<TValue>(default, false, error);
+
     }
 
     public class Result<TValue> : Result
@@ -29,7 +30,8 @@
         }
 
         public TValue Value => IsSuccess ? _value! : throw new InvalidOperationException("There is no value for failure result");
-        public static implicit operator Result<TValue>(TValue value) => value != null ? Success(value) : Failure<TValue>(Error.Unknown);
-        public static Result<TValue> ValidationFailure(Error error) => new Result<TValue>(default, false, error);
+        public static implicit operator Result<TValue>(TValue value) => value != null ? Success(value) : Failure<TValue>(Error.NullObject);
+        public static new Result<TValue> Success() => new Result<TValue>(default, true, Error.None);
+        public static implicit operator Result<TValue>(Error error) => Failure<TValue>(error);
     }
 }

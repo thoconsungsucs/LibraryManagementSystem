@@ -1,4 +1,5 @@
-﻿using LMS.Domain.IService;
+﻿using LMS.Domain.Exceptions;
+using LMS.Domain.IService;
 using LMS.Domain.Ultilities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
@@ -19,7 +20,7 @@ namespace LMS.Services
             _configuration = configuration;
             _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:SigningKey"]));
         }
-        public string GenerateToken(int id, string username, List<string> roles = null)
+        public string GenerateToken(int id, string username, List<string>? roles = null)
         {
             List<Claim> claims = new List<Claim>()
             {
@@ -27,7 +28,7 @@ namespace LMS.Services
                 new Claim(ClaimTypes.NameIdentifier, id.ToString())
             };
 
-            if (roles.IsNullOrEmpty())
+            if (roles == null)
             {
                 claims.Add(new Claim(ClaimTypes.Role, SD.Role_Member));
             }
@@ -54,7 +55,7 @@ namespace LMS.Services
             return tokenHandler.WriteToken(token);
         }
 
-        public bool ValidateToken(string token)
+        public Result ValidateToken(string token)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             try
@@ -69,11 +70,11 @@ namespace LMS.Services
                     ValidAudience = _configuration["JWT:Audience"]
                 }, out SecurityToken validatedToken);
             }
-            catch
+            catch (Exception ex)
             {
-                return false;
+                throw new Exception(ex.Message);
             }
-            return true;
+            return Result.Success();
         }
     }
 }

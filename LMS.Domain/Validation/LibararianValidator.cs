@@ -9,11 +9,9 @@ namespace LMS.Domain.Validation
         public LibrarianValidator()
         {
             RuleFor(l => l.FirstName)
-                .NotEmpty().WithMessage(SD.ValidationMessage.Required)
                 .Matches(@"^[a-zA-Z ]+$").WithMessage(SD.ValidationMessage.UserMessage.NameRegex);
 
             RuleFor(l => l.LastName)
-                .NotEmpty().WithMessage(SD.ValidationMessage.Required)
                 .Matches(@"^[a-zA-Z ]+$").WithMessage(SD.ValidationMessage.UserMessage.NameRegex);
 
             RuleFor(l => l.Email)

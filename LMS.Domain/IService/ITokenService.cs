@@ -1,8 +1,10 @@
-﻿namespace LMS.Domain.IService
+﻿using LMS.Domain.Exceptions;
+
+namespace LMS.Domain.IService
 {
     public interface ITokenService
     {
-        string GenerateToken(int id, string username, List<string> role = null);
-        bool ValidateToken(string token);
+        string GenerateToken(int id, string username, List<string>? role = null);
+        Result ValidateToken(string token);
     }
 }

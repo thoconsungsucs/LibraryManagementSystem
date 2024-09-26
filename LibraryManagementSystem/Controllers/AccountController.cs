@@ -1,6 +1,7 @@
 ﻿using LMS.Domain.DTOs.Account;
 using LMS.Domain.DTOs.Librarian;
 using LMS.Domain.DTOs.Member;
+using LMS.Domain.Exceptions;
 using LMS.Domain.IService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,9 +12,9 @@ namespace LibraryManagementSystem.Controllers
     [ApiController]
     public class AccountController : ControllerBase
     {
-        private readonly IAccountRepository _accountService;
+        private readonly IAccountService _accountService;
 
-        public AccountController(IAccountRepository accountService, ILogger<AccountController> logger)
+        public AccountController(IAccountService accountService, ILogger<AccountController> logger)
         {
             _accountService = accountService;
         }
@@ -56,8 +57,8 @@ namespace LibraryManagementSystem.Controllers
         {
             try
             {
-                var token = await _accountService.LoginAsync(loginDTO);
-                return Ok(token);
+                var tokenResult = await _accountService.LoginAsync(loginDTO);
+                return tokenResult.IsSuccess ? Ok(tokenResult.Value) : Unauthorized(ApiResult.ToProblemDetails(tokenResult));
             }
             catch (Exception ex)
             {
