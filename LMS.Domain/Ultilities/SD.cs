@@ -57,6 +57,7 @@
             public const string NullObject = "NullObject";
             public const string InsufficientStock = "InsufficientStock";
             public const string Unauthorized = "Unauthorized";
+            public const string InternalServerError = "InternalServerError";
         }
 
     }

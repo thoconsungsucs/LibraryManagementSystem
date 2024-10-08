@@ -26,6 +26,19 @@ namespace LMS.Domain.Exceptions
         }
     }
 
+
+    public record InternalServerError : Error
+    {
+        public InternalServerError(String exMessage) 
+            : base
+            (
+                SD.ErrorCode.InternalServerError,
+                new Dictionary<string, List<string>> { { "Message", new List<string> { exMessage } } }
+            )
+        {
+        }
+    }
+
     public static class BookError
     {
         public static Error NotFound(int id) => new Error(

@@ -89,8 +89,14 @@ namespace LMS.Services
                 return new ValidationError(validationResult);
             }
             var book = bookDTO.ToBook();
-            _bookRepository.AddBook(book);
-            await _bookRepository.SaveAsync();
+            try
+            {
+                _bookRepository.AddBook(book);
+                await _bookRepository.SaveAsync();
+            } catch (Exception ex)
+            {
+                return new InternalServerError(ex.Message);
+            }
             return book;
         }
 
